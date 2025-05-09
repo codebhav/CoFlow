@@ -46,7 +46,7 @@ router.route('/signup')
             gender = gender ? Validation.checkGender(gender, "gender") : '';
             city = city ? Validation.checkString(city, "city") : '';
             state = state ? Validation.checkString(state, "state") : '';
-            dob = dob ? Validation.checkDate(dob) : '';
+            dob = dob ? Validation.checkDate(dob, 1) : '';
             courses = courses ? Validation.checkStringArray(courses) : [];
             education = education ? Validation.checkEducation(education) : [];
             if (terms != 'on' || privacy != 'on') throw 'privacy and term must be agreed'

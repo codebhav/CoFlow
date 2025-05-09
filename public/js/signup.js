@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const signupForm = document.getElementById('signup-form');
     const addEducationBtn = document.getElementById('add-education-btn');
     const educationContainer = document.getElementById('education-container');
+    const signupBtn = document.getElementById('signupBtn');
     let educationCount = 1;
     const maxEducation = 5;
     const tooltipIcon = document.querySelector('.tooltip-icon');
@@ -21,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3>Education ${index + 1}</h3>
                 <div class="nested-form-group">
                     <label for="school-${index}">School Name:</label>
-                    <input type="text" id="school-${index}" name="education[${index}][schoolName] required">
+                    <input type="text" id="school-${index}" name="education[${index}][schoolName]">
                 </div>
                 <div class="nested-form-group">
                     <label for="educationLevel-${index}">Education Level:</label>
@@ -82,8 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
             item.querySelector('h3').textContent = `Education ${index + 1}`;
             item.querySelectorAll('[id^="school-"]').forEach(el => el.id = `school-${index}`);
             item.querySelectorAll('[name^="education["]').forEach(el => {
-                const parts = el.name.split('[');
-                el.name = `education[${index}]${parts[1]}`;
+                const parts = el.name.split('[')[2];
+                el.name = `education[${index}][${parts}`;
             });
             const removeButton = item.querySelector('.remove-education-btn');
             removeButton.dataset.index = index;
@@ -105,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (signupForm) {
-        signupForm.addEventListener('submit', (event) => {
+        signupBtn.addEventListener('click', (event) => {
             event.preventDefault();
             const formData = new FormData(signupForm);
 
@@ -130,11 +131,13 @@ document.addEventListener('DOMContentLoaded', () => {
             var passwordError = document.getElementById('password-error');
             var bioError = document.getElementById('bio-error');
             var genderError = document.getElementById('gender-error');
-            // var stateError = document.getElementById('state-error');
-            // var cityError = document.getElementById('city-error');
+            var stateError = document.getElementById('state-error');
+            var cityError = document.getElementById('city-error');
             var dobError = document.getElementById('dob-error');
             var coursesError = document.getElementById('courses-error');
             var educationError = document.getElementById('education-error');
+            var termsError = document.getElementById('terms-error');
+            var privacyError = document.getElementById('privacy-error');
 
             userNameError.textContent = '';
             firstNameError.textContent = '';
@@ -143,8 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
             passwordError.textContent = '';
             bioError.textContent = '';
             genderError.textContent = '';
-            // stateError
-            // cityError
+            cityError.textContent = '';
+            stateError.textContent = '';
             dobError.textContent = '';
             coursesError.textContent = '';
             educationError.textContent = '';
@@ -198,24 +201,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             //State
-            // try {
-            //     checkState(state);
-            // } catch (e) {
-            //     stateError.textContent = e;
-            //     isFormValid = false;
-            // }
+            try {
+                checkState(state);
+            } catch (e) {
+                stateError.textContent = e;
+                isFormValid = false;
+            }
 
-            //City
-            // try {
-            //     checkCity(city);
-            // } catch (e) {
-            //     cityError.textContent = e;
-            //     isFormValid = false;
-            // }
+            // City
+            try {
+                checkCity(city);
+            } catch (e) {
+                cityError.textContent = e;
+                isFormValid = false;
+            }
 
             //dob
             try {
-                dob ? checkDate(dob) : '';
+                console.log(dob)
+                dob ? checkDate(dob, 1) : '';
             } catch (e) {
                 dobError.textContent = e;
                 isFormValid = false;
@@ -231,9 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const educations = document.querySelectorAll('.education-item');
             if (educations) {
+
                 educations.forEach((edu, index) => {
+                    console.log(edu, index)
                     var schoolName = edu.querySelector(`[name="education[${index}][schoolName]"]`);
-                    schoolName = schoolName ? schoolName.value : ""
+                    var schoolName = schoolName ? schoolName.value : "";
                     var educationLevel = edu.querySelector(`[name="education[${index}][educationLevel]"]`);
                     var educationLevel = educationLevel ? educationLevel.value : "";
                     var major = edu.querySelector(`[name="education[${index}][major]"]`);
@@ -255,6 +261,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             };
 
+            try {
+                if (privacy != 'on') throw 'privacy must be agreed'
+            } catch (e) {
+                privacyError.textContent = e;
+                isFormValid = false;
+            }
+            try {
+                if (terms != 'on') throw 'term must be agreed'
+            } catch (e) {
+                termsError.textContent = e;
+                isFormValid = false;
+            }
             if (isFormValid) {
                 signupForm.submit();
             } else {

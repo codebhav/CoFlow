@@ -15,8 +15,8 @@
         <label for="uploadPic">Choose an image:</label>
         <input type="file" id="uploadPic" name="uploadPic" accept="image/*" readonly disabled>
         <input type="text" id="profilePicture" name="profilePicture" value="{{user.profilePicture}}" style="display:none;" >
-         <div>
-            <div>Rating:{{user.rating}}</div>
+         <div class="form-group">
+            <div class="normal-text">Rating:{{user.rating}}</div>
         </div>
         
         <h2>Basic Information</h2>
@@ -81,8 +81,8 @@
             <input type="text" id="city" name="city" value="{{user.city}}" readonly>
             <div class="error-message" id="city-error"></div>
         </div>
-        <div>
-            <div>Age:{{user.age}}</div>
+        <div class="form-group">
+            <div class="normal-text">Age:{{user.age}}</div>
         </div>
 
         <div class="form-group">

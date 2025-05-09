@@ -324,24 +324,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             //State
-            // try {
-            //     checkState(state);
-            // } catch (e) {
-            //     stateError.textContent = e;
-            //     isFormValid = false;
-            // }
+            try {
+                checkState(state);
+            } catch (e) {
+                stateError.textContent = e;
+                isFormValid = false;
+            }
 
             //City
-            // try {
-            //     checkCity(city);
-            // } catch (e) {
-            //     cityError.textContent = e;
-            //     isFormValid = false;
-            // }
+            try {
+                checkCity(city);
+            } catch (e) {
+                cityError.textContent = e;
+                isFormValid = false;
+            }
 
             //dob
             try {
-                dob ? checkDate(dob) : '';
+                dob ? checkDate(dob, 1) : '';
             } catch (e) {
                 dobError.textContent = e;
                 isFormValid = false;

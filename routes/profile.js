@@ -23,7 +23,6 @@ router.route('/')
         console.log("Route profile form Data", formData);
         let { uploadPic, profilePicture, userName, firstName, lastName, email, bio, gender, state, city, dob, courses, education } = req.body;
         const lastuserName = req.session.user.userName;
-        console.log(profilePicture);
 
         try {
             const originUsername = await profiledata.findUserByUsername(lastuserName);
@@ -62,7 +61,6 @@ router.route('/')
             courses = courses ? Validation.checkStringArray(courses) : [];
             education = education ? Validation.checkEducation(education) : [];
 
-            console.log(profilePicture);
             let updateUser = await profiledata.updateUserProfile(lastuserName, userName, firstName, lastName, email, bio, gender, state, city, dob, courses, education, profilePicture);
             if (updateUser) {
                 req.session.user = {

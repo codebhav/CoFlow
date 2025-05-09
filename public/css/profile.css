@@ -27,7 +27,8 @@
 .form-group input[type="email"],
 .form-group input[type="date"],
 .form-group select,
-.form-group textarea {
+.form-group textarea,
+.form-group .normal-text {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
@@ -37,7 +38,8 @@
 
 .form-group input[readonly],
 .form-group textarea[readonly],
-.form-group select[disabled] {
+.form-group select[disabled],
+.form-group .normal-text {
     background-color: #f9f9f9;
     cursor: not-allowed;
 }

@@ -6,7 +6,7 @@ function checkUserName(userName) {
         throw `Error: userName cannot be an empty string or string with just spaces`;
     if (!isNaN(userName))
         throw `Error: UserName is not a valid value for userName as it only contains digits`;
-    if (userName.length >= 20 && userName.length >= 5)
+    if (userName.length >= 20 || userName.length < 5)
         throw `Error: userName cannot be at least 5 character and at most 20 character`;
     return userName;
 };
@@ -60,7 +60,7 @@ function checkString(strVal, varName) {
     return strVal;
 }
 
-function checkDate(date) {
+function checkDate(date, birth) {
     if (date === null || date === undefined)
         throw new Error("Date cannot be null or undefined");
     if (typeof date !== 'string')
@@ -101,6 +101,7 @@ function checkDate(date) {
     ) {
         throw new Error("Invalid date: The provided year, month, and day do not form a valid date.");
     }
+    if (birth && dateValid >= current) throw "Invalidate date: birthday can't be later than today";
     const formattedMonth = month.toString().padStart(2, '0');
     const formattedDay = day.toString().padStart(2, '0');
 
@@ -141,4 +142,13 @@ function checkStringArray(arr, varName) {
     }
 
     return arr;
+}
+
+function checkCity(city) {
+    return city;
+
+}
+
+function checkState(state) {
+    return state;
 }

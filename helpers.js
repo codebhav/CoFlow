@@ -59,7 +59,7 @@ const exportedMethods = {
 
         return email.toLowerCase();
     },
-    checkDate(date) {
+    checkDate(date, birth) {
         if (date === null || date === undefined)
             throw new Error("Date cannot be null or undefined");
         if (typeof date !== 'string')
@@ -100,6 +100,7 @@ const exportedMethods = {
         ) {
             throw new Error("Invalid date: The provided year, month, and day do not form a valid date.");
         }
+        if (birth && dateValid >= current) throw "Invalidate date: birthday can't be later than today"
         const formattedMonth = month.toString().padStart(2, '0');
         const formattedDay = day.toString().padStart(2, '0');
 
