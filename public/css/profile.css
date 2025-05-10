@@ -127,3 +127,7 @@ button:hover {
 img {
     width: 300px;
 }
+
+.badge {
+    width: 80px;
+}

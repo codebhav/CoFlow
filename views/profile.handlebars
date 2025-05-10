@@ -17,6 +17,12 @@
         <input type="text" id="profilePicture" name="profilePicture" value="{{user.profilePicture}}" style="display:none;" >
          <div class="form-group">
             <div class="normal-text">Rating:{{user.rating}}</div>
+            <div class="image-container">
+                <div class="normal-text">Badges</div>
+                {{#each user.badgeIds}}
+                <img class="badge" src="/public/img/{{this}}.png" alt="{{this}}">
+                {{/each}}
+            </div>
         </div>
         
         <h2>Basic Information</h2>
@@ -81,14 +87,14 @@
             <input type="text" id="city" name="city" value="{{user.city}}" readonly>
             <div class="error-message" id="city-error"></div>
         </div>
-        <div class="form-group">
-            <div class="normal-text">Age:{{user.age}}</div>
-        </div>
 
         <div class="form-group">
             <label for="dob">Date of Birth:</label>
             <input type="date" id="dob" name="dob" value="{{user.dob}}" readonly>
             <div class="error-message" id="dob-error"></div>
+        </div>
+        <div class="form-group">
+            <div class="normal-text">Age:{{user.age}}</div>
         </div>
 
         <div class="form-group">

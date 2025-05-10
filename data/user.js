@@ -163,7 +163,6 @@ async function updateUserProfile(lastuserName, userName, firstName, lastName, em
     if (education) originUser.education = education;
     if (profilePicture) originUser.profilePicture = profilePicture;
 
-    console.log(originUser);
 
     const userCollection = await users();
     let userId = originUserData._id.toString();
@@ -176,9 +175,32 @@ async function updateUserProfile(lastuserName, userName, firstName, lastName, em
     return user;
 };
 
+async function addBadge(userName, badgeIds) {
+    if (!userName || !badgeIds) throw "All fields are required";
+    userName = Validation.checkString(userName, "Validate username");
+    badgeIds = Validation.checkStringArray(badgeIds);
+
+    let findUser = await findUserByUsername(userName);
+    if (!findUser) throw "No user found";
+
+
+    var updatedBadgeIds = Array.from(new Set([...(findUser.badgeIds || []), ...badgeIds]));
+
+    const userCollection = await users();
+    let userId = findUser._id.toString();
+    const updatedUser = await userCollection.updateOne({ _id: new ObjectId(userId) }, { $set: { badgeIds: updatedBadgeIds } });
+
+    if (!updatedUser.matchedCount && !updatedUser.modifiedCount) {
+        throw 'Could not update user successfully';
+    }
+
+    const user = await this.findUserById(userId);
+    return user;
+}
+
 async function removeUser(userId) {
     if (!userId) throw 'Need to provide userId';
-    userId = Validation.checkID(userId);
+    userId = Validation.checkId(userId);
     const userCollection = await users();
     const user = await findUserById(userId);
     if (user === null) throw 'No user with that id';
@@ -222,4 +244,4 @@ async function checkLogin(userName, password) {
 
 };
 
-export { createUser, findUserByEmail, findUserByUsername, findUserById, getAllUsers, updateUserProfile, removeUser, checkLogin };
+export { createUser, findUserByEmail, findUserByUsername, findUserById, getAllUsers, updateUserProfile, removeUser, checkLogin, addBadge };

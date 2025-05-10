@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import * as userdata from '../data/user.js';
 import middleware from '../middleware.js';
 import Validation from '../helpers.js'
+import xss from 'xss';
 
 router.route('/signup')
     .get(middleware.signupRouteMiddleware, async(req, res) => {
@@ -118,4 +119,54 @@ router.route('/logout')
             res.redirect('/auth/login');
         })
     });
+
+router.delete('/:id', async(req, res) => {
+    try {
+        var userId = req.params.id;
+        userId = Validation.checkId(userId);
+        var user = await userdata.findUserById(userId);
+        if (!user) {
+            res.status(404).json({ message: 'No user find' });
+        }
+        var result = await userdata.removeUser(userId);
+        if (result) {
+            res.status(200).json({ message: 'User deleted successfully' });
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ message: error });
+    }
+});
+
+router.patch('/add-badge', async(req, res) => {
+    try {
+        var { userName, userId, badges } = req.body;
+        try {
+            badges = Validation.checkStringArray(badges, "badges");
+        } catch (e) {
+            return res.status(400).json({ error: e });
+        }
+        var user = null;
+
+        // Handle cases in a defined priority order
+        if (userName) {
+            user = await userdata.findUserByUsername(userName);
+        } else if (userId) {
+            user = await userdata.findUserById(userId);
+        }
+
+        if (!user) {
+            return res.status(404).json({ message: 'No user found' });
+        }
+
+        var result = await userdata.addBadge(user.userName, badges);
+        if (result) {
+            return res.status(200).json(result);
+        }
+    } catch (error) {
+        console.error('Error adding badges:', error);
+        return res.status(500).json({ message: error.toString() });
+    }
+});
+
 export default router;
