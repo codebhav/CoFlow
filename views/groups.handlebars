@@ -1,0 +1,79 @@
+<form class="searchForm" action="/groups/search" method="POST">
+    <input type="text" name="search" placeholder="Search" class="searchBar" />
+    <button type="submit">Search</button>
+</form>
+
+
+<h2 class="groupHeader">
+    Available Groups
+</h2>
+
+
+    <div class="menu" id="userMenu">
+        <div class="menu-content">
+        <span class="closeButton" id="closeUserMenu">&times;</span>
+
+        <h3>Pending Users</h3>
+        <div id="pendingList">
+        </div>
+
+        <h3>Approved Users</h3>
+        <div id="approvedList">
+        </div>
+
+        <button id="deleteGroupBtn">Delete Group</button>
+      </div>
+    </div>
+
+
+        <div class="menu" id="unprivilegedUserMenu">
+      <div class="menu-content">
+        <span class="closeButton" id="closeUnprivilegedMenu">&times;</span>
+
+        <h3>Approved Users</h3>
+        <div id="unprivilegedApprovedList">
+        </div>
+
+        <button id="leaveGroupBtn">Leave Group</button>
+      </div>
+    </div>
+
+
+
+{{#if groups.length}}
+    {{#each groups}}
+        <div class="group">
+            <h3>{{groupName}}</h2>
+            <p>{{location}} | {{course}} | {{startTime}} - {{endTime}} | {{meetingDate}}</p>
+            <p>Members: {{members.length}}/{{capacity}}</p>
+            <p>{{description}}</p>
+            {{#if (eq userRole "admin")}}
+                <form name="userForm" id="{{_id}}" class="userForm" action="/groups/mygroups" method="GET">
+                  <button type="submit">Go to Admin Page</button>
+                </form>
+
+
+            {{else if (eq userRole "member")}}
+                <form id={{_id}} class="userFormUnprivileged">
+                  <button type="button" class="leaveGroupBtn">Leave Group</button>
+                </form>
+
+            {{else if (eq userRole "pending")}}
+              <form id={{_id}} class="cancelReqForm">
+                <button type="button" class="cancelReqBtn">Cancel Request</button>
+              </form>
+
+            {{else if (eq userRole "noval")}}
+              <form name="reqJoin" id={{_id}} class="joinForm" method="POST" action="/reqJoin">
+                <button type="submit" class="joinButton">Request to Join</button>
+              </form>
+            {{/if}}
+
+        </div>
+    {{/each}}
+{{else}}
+    <p class="notFound">No groups found</p>
+{{/if}}
+
+
+
