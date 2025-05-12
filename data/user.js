@@ -59,6 +59,7 @@ async function createUser(userName, firstName, lastName, email, hashedPassword, 
         notificationSettings: {},
         createdGroups: [],
         joinedGroups: [],
+        pendingGroups: [],
         role: "user"
 
     }
