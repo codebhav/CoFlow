@@ -11,12 +11,23 @@ router.route('/signup')
         res.render('signup', { title: 'Sign Up' });
     })
     .post(async(req, res) => {
-        const formData = req.body;
 
-        console.log('Signup Form Data:', formData);
+        // console.log('Signup Form Data:', req.body);
 
-        let { userName, firstName, lastName, email, password, bio, gender, city, state, dob, courses, education, terms, privacy } = req.body;
-
+        var userName = xss(req.body.userName);
+        var firstName = xss(req.body.firstName);
+        var lastName = xss(req.body.lastName);
+        var email = xss(req.body.email);
+        var password = xss(req.body.password);
+        var bio = xss(req.body.bio);
+        var gender = xss(req.body.gender);
+        var city = xss(req.body.city);
+        var state = xss(req.body.state);
+        var dob = xss(req.body.dob);
+        var courses = xss(req.body.courses);
+        var education = xss(req.body.education);
+        var terms = xss(req.body.terms);
+        var privacy = xss(req.body.privacy);
         try {
             const existingUsername = await userdata.findUserByUsername(userName);
             if (existingUsername) {
@@ -79,8 +90,9 @@ router.route('/login')
         res.render('login', { title: 'Login' });
     })
     .post(async(req, res) => {
-        var { userName, password } = req.body;
 
+        var userName = xss(req.body.userName);
+        var password = xss(req.body.password);
         try {
             userName = Validation.checkUserName(userName);
             password = Validation.checkString(password);
@@ -95,31 +107,36 @@ router.route('/login')
                 role: finduser.role
             };
             // add badge
-            if (finduser.rating == 5) {
-                let res = await userdata.addBadge(finduser.userName, ["5rating"]);
-                if (!res) throw "Error adding 5rating badge to user";
-            };
-            if (finduser.createdGroups >= 5) {
-                let res = await userdata.addBadge(finduser.userName, ["5group"]);
-                if (!res) throw "Error adding 5group badge to user";
+            try {
+                if (finduser.rating == 5) {
+                    let res = await userdata.addBadge(finduser.userName, ["5rating"]);
+                    if (!res) throw "Error adding 5rating badge to user";
+                };
+                if (finduser.joinedGroups.length >= 5) {
+                    let res = await userdata.addBadge(finduser.userName, ["5group"]);
+                    if (!res) throw "Error adding 5group badge to user";
 
-            };
-            if (finduser.createdGroups >= 10) {
-                let res = await userdata.addBadge(finduser.userName, ["10group"]);
-                if (!res) throw "Error adding 5group badge to user";
+                };
+                if (finduser.joinedGroups.length >= 10) {
+                    let res = await userdata.addBadge(finduser.userName, ["10group"]);
+                    if (!res) throw "Error adding 5group badge to user";
 
-            };
+                };
 
-            switch (finduser.role) {
-                case 'user':
-                    res.redirect('/profile');
-                    break;
-                case 'business':
-                    res.redirect('/profile/business');
-                    break;
-                case 'admin':
-                    res.redirect('/admin/admin-table');
-                    break;
+                switch (finduser.role) {
+                    case 'user':
+                        res.redirect('/profile');
+                        break;
+                    case 'business':
+                        res.redirect('/profile/business');
+                        break;
+                    case 'admin':
+                        res.redirect('/admin/admin-table');
+                        break;
+                }
+            } catch (e) {
+                console.error('Error during login:', error);
+                res.render('login', { title: 'Login', error: error });
             }
 
 
@@ -138,7 +155,7 @@ router.route('/logout')
 
 router.delete('/:id', async(req, res) => {
     try {
-        var userId = req.params.id;
+        var userId = xss(req.params.id);
         userId = Validation.checkId(userId);
         var user = await userdata.findUserById(userId);
         if (!user) {
@@ -156,7 +173,9 @@ router.delete('/:id', async(req, res) => {
 
 router.patch('/add-badge', async(req, res) => {
     try {
-        var { userName, userId, badges } = req.body;
+        var userName = xss(req.body.userName);
+        var userId = xss(req.body.userId);
+        var badges = xss(req.body.badges);
         try {
             badges = Validation.checkStringArray(badges, "badges");
         } catch (e) {

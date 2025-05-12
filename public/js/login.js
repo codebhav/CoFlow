@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
             var userName = document.getElementById('userName').value;
             var password = document.getElementById('password').value;
-            console.log(userName, password);
             const errorUserName = document.getElementById('userName-error');
             const errorPassword = document.getElementById('password-error');
             var validinput = 1;

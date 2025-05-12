@@ -165,12 +165,12 @@ const exportedMethods = {
 
             // Validate start date if provided
             if (entry.startDate && entry.startDate.trim().length > 0) {
-                validatedEntry.startDate = this.checkDate(entry.startDate);
+                validatedEntry.startDate = this.checkDate(entry.startDate, null);
             } else {
                 validatedEntry.startDate = '';
             }
             if (entry.endDate && entry.endDate.trim().length > 0) {
-                validatedEntry.endDate = this.checkDate(entry.endDate);
+                validatedEntry.endDate = this.checkDate(entry.endDate, null);
             } else {
                 validatedEntry.endDate = '';
             }

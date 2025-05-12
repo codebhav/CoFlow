@@ -3,14 +3,19 @@ const router = Router();
 import * as profiledata from '../data/user.js';
 import middleware from '../middleware.js';
 import Validation from '../helpers.js';
-
+import xss from 'xss';
 
 router.route('/')
     .get(middleware.userRouteMiddleware, async(req, res) => {
         try {
             if (req.session && req.session.user) {
-                const user = await profiledata.findUserById(req.session.user.id);
-                res.render('profile', { title: 'Profile', user: user });
+                const user = await profiledata.findUserById(xss(req.session.user.id));
+                const states = [
+                    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+                    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+                    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+                ];
+                res.render('profile', { title: 'Profile', user: user, states: states });
             }
 
         } catch (error) {
@@ -21,8 +26,22 @@ router.route('/')
     .post(async(req, res) => {
         const formData = req.body;
         console.log("Route profile form Data", formData);
-        let { uploadPic, profilePicture, userName, firstName, lastName, email, bio, gender, state, city, dob, courses, education } = req.body;
-        const lastuserName = req.session.user.userName;
+        var uploadPic = xss(req.body.uploadPic);
+        var profilePicture = xss(req.body.profilePicture);
+        var userName = xss(req.body.userName);
+        var firstName = xss(req.body.firstName);
+        var lastName = xss(req.body.lastName);
+        var email = xss(req.body.email);
+        var bio = xss(req.body.bio);
+        var gender = xss(req.body.gender);
+        var state = xss(req.body.state);
+        var city = xss(req.body.city);
+        var dob = xss(req.body.dob);
+        var courses = xss(req.body.courses);
+        var education = req.body.education;
+        var lastuserName = xss(req.session.user.userName);
+
+
 
         try {
             const originUsername = await profiledata.findUserByUsername(lastuserName);

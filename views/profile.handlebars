@@ -76,7 +76,7 @@
             <select id="state" name="state" disabled>
                 <option value="">Select State</option>
                 {{#each states}}
-                    <option value="{{this}}" {{#if (eq ../user.state this)}}selected{{/if}}>{{this}}</option>
+                    <option value="{{this}}" {{#if (eq user.state this)}}selected{{/if}}>{{this}}</option>
                 {{/each}}
             </select>
             <div class="error-message" id="state-error"></div>
@@ -137,6 +137,70 @@
             <div class="error-message" id="education-error"></div>
         </div>
     </form>
+    <div id="group-container">
+        <div id="schedule-container">
+            <div class="calendar-container">
+        <div class="calendar-header">
+            <button id="prevMonth">&lt;</button>
+            <h2>{{currentMonth}}</h2>
+            <button id="nextMonth">&gt;</button>
+        </div>
+        <div class="weekdays">
+            <div>Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+        </div>
+        {{!-- <div class="calendar-days">
+            {{#each user}}
+                {{#if this}}
+                    <div class="calendar-day {{#if this.schedules.length}}has-schedule{{/if}}" 
+                         data-date="{{this.date}}"
+                         data-full-date="{{this.date}}">
+                        {{this.day}}
+                        {{#if this.schedules.length}}
+                            <div class="schedule-indicator">{{this.schedules.length}}</div>
+                        {{/if}}
+                    </div>
+                {{else}}
+                    <div class="calendar-day disabled"></div>
+                {{/if}}
+            {{/each}}
+        </div>
+    </div> --}}
+
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Schedule Details</h3>
+            <ol id="scheduleDetails">
+                 {{#each user.schedule}}
+                <li>{{this.groupId}}{{this.start_time}}{{this.end_time}}</li>
+                {{/each}}
+            </ol>
+        </div>
+    </div>
+        </div>
+        <div id="creategroup-container">
+            <h3>Created Groups</h3>
+            <ol id="createGroupDetails">
+                 {{#each user.createdGroups}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ol>
+        </div>
+        <div id="joinedgroup-container">
+            <h3>Joined Groups</h3>
+            <ol id="joinedGroupDetails">
+                 {{#each user.joinedGroups}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ol>
+        </div>
+    </div>
 </div>
 {{else}}
     <p>You are not logged in.</p>
