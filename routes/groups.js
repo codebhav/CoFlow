@@ -213,6 +213,7 @@ router.route('/deleteGroup').post(async(req, res) => {
 router.route('/myGroups').get(async(req, res) => {
     try {
         if(req.session && req.session.user){
+            console.log(req.session.user);
 
 
         // let pendingGroups = await groupData.getPendingGroupsById();
@@ -221,16 +222,18 @@ router.route('/myGroups').get(async(req, res) => {
 
         // let createdGroup = await groupData.getCreatedGroups();
             let userId = req.session.user.id;
-            let ownedGroups = await groupData.getGroupDataForMember(userId);
-            let joinedGroups = await groupData.getJoinedGroupDataForMember(userId);
-            let pendingGroups = await groupData.getPendingGroupDataForMember(userId);
-
+            console.log('Logging userid:', userId);
+            let ownedGroups = await groupData.getGroupDataForMember(req.session.user.id);
+            let joinedGroups = await groupData.getJoinedGroupDataForMember(req.session.user.id);
+            let pendingGroups = await groupData.getPendingGroupDataForMember(req.session.user.id);
+            console.log('Logging mygroups function: ', ownedGroups, joinedGroups, pendingGroups);
             
 
             return res.render('mygroups', { ownedGroups, joinedGroups, pendingGroups, title: 'Groups' })
         }
         
     } catch (e) {
+        console.log('Error encountered', e);
         return res.status(500).render('error', { error: 'Internal Server Error' });                
     }
 })
@@ -238,6 +241,7 @@ router.route('/myGroups').get(async(req, res) => {
     try {
         if(req.session && req.session.user){
             let userId = req.session.user.id;
+            console.log('Logging New Group', userId, req.body);
             let newGroup = await groupData.createGroupHelper(req.body.groupName, req.body.description, Number(req.body.capacity), req.body.location, req.body.course, req.body.startTime, req.body.endTime, req.body.meetingDate, req.body.groupType, userId, ['This', 'is', 'temporary']);
             res.redirect('/groups/myGroups')
         }
