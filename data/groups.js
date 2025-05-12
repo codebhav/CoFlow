@@ -29,6 +29,21 @@ export const addGroupToUser = async(groupId, userId) => {
 
 
 
+export const addScheduleToUser = async(userId, groupId) => {
+    let usersCollection = await users();
+    if(!usersCollection) throw 'Could not connect to database';
+
+    const result = await usersCollection.updateOne(
+      { _id: new ObjectId(userId) },
+      { $addToSet: { createdGroups: groupId } }
+    );
+
+
+
+};
+
+
+
 export const getPendingUsersForGroup = async (groupId, userId) => {
     if(!userId) throw 'Must provide userId';
     if(!groupId) throw 'Must provide groupId';
