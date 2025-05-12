@@ -13,6 +13,7 @@
     {{/if}}
     {{#if (eq title 'Profile')}}
         <link rel="stylesheet" href="/public/css/profile.css">
+        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     {{/if}}
     {{#if (eq title 'Admin')}}
         <link rel="stylesheet" href="/public/css/admin.css">
@@ -68,6 +69,16 @@
     {{#if (eq title 'Profile')}}
         <script src="/public/js/profile.js"></script>
         <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+   <script> 
+    {{#if user}}
+    const calendarEl = document.getElementById('calendar');
+    calendarEl.innerHTML = "XXXXXXXXX";
+    const schedule = {{user.schedule}};
+    console.log(schedule);
+    // Map schedule to FullCalendar events
+    {{/if}}
+    </script>
     {{/if}}
 </body>
 </html>

@@ -139,11 +139,11 @@
     </form>
     <div id="group-container">
         <div id="schedule-container">
-            <div class="calendar-container">
+            <h3>Schedule Calendar</h3>
+             <div id="calendar"></div>
+
 
     <div id="scheduleModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
             <h3>Schedule Details</h3>
             <ol id="scheduleDetails">
                  {{#each user.schedule}}
@@ -171,6 +171,7 @@
         </div>
     </div>
 </div>
+
 {{else}}
     <p>You are not logged in.</p>
     <p><a href="/auth/login">Login</a></p>

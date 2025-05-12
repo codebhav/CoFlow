@@ -14,7 +14,8 @@
     "type": "module",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node app.js"
+        "start": "node app.js",
+        "seed": "node ./seed/seed.js"
     },
     "author": "Team11",
     "license": "ISC"

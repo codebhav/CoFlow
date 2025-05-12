@@ -390,20 +390,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Populate state dropdown if needed
-    // const stateDropdown = document.getElementById('state');
-    // if (stateDropdown && stateDropdown.options.length <= 1) {
-    //     const states = [
-    //         "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-    //         "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-    //         "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
-    //     ];
-    //     states.forEach(state => {
-    //         const option = document.createElement('option');
-    //         option.value = state;
-    //         option.textContent = state;
-    //         stateDropdown.appendChild(option);
-    //     });
-    // }
+
 
 });

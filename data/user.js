@@ -197,7 +197,7 @@ async function addBadge(userName, badgeIds) {
         throw 'Could not update user successfully';
     }
 
-    const user = await this.findUserById(userId);
+    const user = await findUserById(userId);
     return user;
 }
 
