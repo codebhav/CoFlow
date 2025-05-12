@@ -5,7 +5,6 @@ add.use(myMiddleWare()). you can also just define them in the app.js if you like
 */
 
 
-
 const loggingMiddleware = (req, res, next) => {
     const timestamp = new Date().toUTCString();
     const method = req.method;

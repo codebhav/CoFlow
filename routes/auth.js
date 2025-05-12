@@ -94,6 +94,22 @@ router.route('/login')
                 lastName: finduser.lastName,
                 role: finduser.role
             };
+            // add badge
+            if (finduser.rating == 5) {
+                let res = await userdata.addBadge(finduser.userName, ["5rating"]);
+                if (!res) throw "Error adding 5rating badge to user";
+            };
+            if (finduser.createdGroups >= 5) {
+                let res = await userdata.addBadge(finduser.userName, ["5group"]);
+                if (!res) throw "Error adding 5group badge to user";
+
+            };
+            if (finduser.createdGroups >= 10) {
+                let res = await userdata.addBadge(finduser.userName, ["10group"]);
+                if (!res) throw "Error adding 5group badge to user";
+
+            };
+
             switch (finduser.role) {
                 case 'user':
                     res.redirect('/profile');

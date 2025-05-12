@@ -66,6 +66,8 @@ async function createUser(userName, firstName, lastName, email, hashedPassword, 
 
     const newInsertInformation = await userCollection.insertOne(newuser);
     if (!newInsertInformation.insertedId) throw 'Insert failed!';
+    var res = await addBadge(userName, ["newUser"]);
+    if (!res) throw "Fail to add newUser badge"
     return await this.findUserById(newInsertInformation.insertedId.toString());
 };
 
