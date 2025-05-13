@@ -1,0 +1,238 @@
+/* Review-specific styling for CoFlow */
+
+/* Star rating display */
+.stars-display {
+	display: flex;
+	gap: 2px;
+}
+
+.star {
+	color: #e0e0e0;
+	font-size: 1.2rem;
+}
+
+.star.filled {
+	color: #ffc107;
+}
+
+.rating-number {
+	margin-left: 5px;
+	font-weight: bold;
+	color: #343a40;
+}
+
+.no-rating {
+	color: #6c757d;
+	font-style: italic;
+	font-size: 0.9rem;
+}
+
+/* Review card */
+.review-card {
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	padding: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.review-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 1rem;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+/* Reviewer info */
+.reviewer-info {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.reviewer-image {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid #f8f9fa;
+}
+
+.reviewer-info h3 {
+	margin: 0 0 0.25rem 0;
+	font-size: 1.1rem;
+	color: #343a40;
+}
+
+.review-date {
+	margin: 0;
+	font-size: 0.85rem;
+	color: #6c757d;
+}
+
+.review-username {
+	color: #6c757d;
+	font-size: 0.9rem;
+	margin: 0;
+}
+
+/* Review content */
+.review-comment {
+	background-color: #f8f9fa;
+	padding: 1rem;
+	border-radius: 4px;
+	margin-bottom: 1rem;
+	color: #343a40;
+}
+
+.review-comment p {
+	margin: 0;
+	line-height: 1.6;
+}
+
+.review-comment.empty {
+	color: #6c757d;
+	font-style: italic;
+}
+
+/* Rating distribution */
+.rating-distribution {
+	margin: 1.5rem 0;
+}
+
+.distribution-row {
+	display: flex;
+	align-items: center;
+	margin-bottom: 0.5rem;
+}
+
+.distribution-label {
+	width: 40px;
+	text-align: right;
+	margin-right: 10px;
+	font-weight: bold;
+	color: #495057;
+}
+
+.distribution-bar-container {
+	flex: 1;
+	background-color: #e9ecef;
+	height: 12px;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.distribution-bar {
+	height: 100%;
+	background-color: #007bff;
+	border-radius: 6px;
+}
+
+.distribution-count {
+	width: 40px;
+	text-align: left;
+	margin-left: 10px;
+	color: #6c757d;
+	font-size: 0.9rem;
+}
+
+/* Review form */
+.rating-input {
+	display: flex;
+	margin-bottom: 1rem;
+}
+
+.review-form textarea {
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid #ced4da;
+	border-radius: 4px;
+	min-height: 100px;
+}
+
+/* Review actions */
+.review-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+
+.review-btn {
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+	font-size: 0.9rem;
+	border: none;
+}
+
+.review-btn-primary {
+	background-color: #007bff;
+	color: white;
+}
+
+.review-btn-secondary {
+	background-color: #6c757d;
+	color: white;
+}
+
+.review-btn-danger {
+	background-color: #dc3545;
+	color: white;
+}
+
+/* Review stats */
+.review-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+.review-stat-card {
+	background-color: #f8f9fa;
+	border-radius: 8px;
+	padding: 1.5rem;
+	text-align: center;
+	flex: 1;
+	min-width: 150px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.review-stat-value {
+	font-size: 2rem;
+	font-weight: bold;
+	color: #007bff;
+	line-height: 1;
+	margin-bottom: 0.5rem;
+}
+
+.review-stat-label {
+	color: #6c757d;
+	font-size: 0.9rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.review-header {
+		flex-direction: column;
+	}
+
+	.reviewer-info {
+		margin-bottom: 1rem;
+	}
+
+	.review-actions {
+		flex-direction: column;
+	}
+
+	.review-stat-card {
+		min-width: 100%;
+	}
+}
