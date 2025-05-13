@@ -311,3 +311,56 @@ button:hover {
 .view-all-badges-link a:hover {
 	text-decoration: underline;
 }
+.profile-stat {
+	background-color: #f8f9fa;
+	padding: 10px 20px;
+	border-radius: 8px;
+	text-align: center;
+}
+
+.stat-label {
+	font-weight: bold;
+	color: #6c757d;
+	display: block;
+	margin-bottom: 5px;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+}
+
+.stat-value {
+	font-size: 1.5rem;
+	color: #343a40;
+	font-weight: 600;
+}
+
+.stars-inline {
+	display: inline-flex;
+	margin-right: 5px;
+}
+
+.star {
+	color: #e0e0e0;
+	font-size: 1.2rem;
+}
+
+.star.filled {
+	color: #ffc107;
+}
+
+.rating-display {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.view-reviews-link {
+	display: block;
+	font-size: 0.9rem;
+	color: #007bff;
+	margin-top: 5px;
+	text-decoration: none;
+}
+
+.view-reviews-link:hover {
+	text-decoration: underline;
+}

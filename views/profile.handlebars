@@ -28,7 +28,21 @@
         <div class="profile-stats">
             <div class="profile-stat">
                 <span class="stat-label">Rating:</span>
-                <span class="stat-value">{{#if user.rating}}{{user.rating}}{{else}}N/A{{/if}}</span>
+                <span class="stat-value">
+                    {{#if user.rating}}
+                        <div class="rating-display">
+                            <div class="stars-inline">
+                                {{#each (range 1 5)}}
+                                    <span class="star {{#if (lte this ../user.rating)}}filled{{/if}}">★</span>
+                                {{/each}}
+                            </div>
+                            <span>{{user.rating}}</span>
+                        </div>
+                    {{else}}
+                        N/A
+                    {{/if}}
+                </span>
+                <a href="/reviews" class="view-reviews-link">View All Reviews</a>
             </div>
         </div>
         

@@ -53,6 +53,14 @@
                                 <a href="/groups/{{group_id}}/edit" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
+                                <a href="/reviews/group/{{group_id}}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-star"></i> Reviews
+                                </a>
+                                {{/eq}}
+                                {{#eq type 'participant'}}
+                                <a href="/reviews/new/{{group_id}}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-pen"></i> Write Review
+                                </a>
                                 {{/eq}}
                                 <button class="btn btn-sm btn-danger btn-remove" data-group-id="{{group_id}}">
                                     <i class="fas fa-trash-alt"></i> Remove
