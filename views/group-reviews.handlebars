@@ -1,0 +1,364 @@
+<div class="group-reviews-container">
+    <h1>Reviews for {{group.groupName}}</h1>
+    
+    <div class="group-info">
+        <div class="group-details">
+            <p><strong>Course:</strong> {{group.course}}</p>
+            <p><strong>Type:</strong> {{capitalize group.groupType}}</p>
+            <p><strong>Meeting Date:</strong> {{group.meetingDate}}</p>
+            <p><strong>Time:</strong> {{group.startTime}} - {{group.endTime}}</p>
+        </div>
+        
+        <div class="group-actions">
+            <a href="/groups/{{group._id}}" class="btn-secondary">Back to Group</a>
+            
+            {{#if (isMember group currentUser.id)}}
+                <a href="/reviews/new/{{group._id}}" class="btn-primary">Write a Review</a>
+            {{/if}}
+        </div>
+    </div>
+    
+    {{#if reviews.length}}
+        <div class="reviews-stats">
+            <h2>Review Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value">{{reviews.length}}</span>
+                    <span class="stat-label">Total Reviews</span>
+                </div>
+                
+                <div class="stat-card">
+                    <span class="stat-value">{{calculateAverage reviews}}</span>
+                    <span class="stat-label">Average Rating</span>
+                </div>
+                
+                <div class="stat-card">
+                    <span class="stat-value">{{mostActiveUser}}</span>
+                    <span class="stat-label">Most Active Reviewer</span>
+                </div>
+            </div>
+        </div>
+        
+        <h2>All Reviews</h2>
+        
+        <div class="reviews-list">
+            {{#each reviews}}
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <img src="{{lookup ../users reviewerId 'profilePicture'}}" 
+                                 alt="{{lookup ../users reviewerId 'userName'}}" 
+                                 class="reviewer-image">
+                            <div>
+                                <h3>{{lookup ../users reviewerId 'firstName'}} {{lookup ../users reviewerId 'lastName'}}</h3>
+                                <p class="review-username">@{{lookup ../users reviewerId 'userName'}}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="review-for">
+                            <span>reviewed</span>
+                            <img src="{{lookup ../users targetId 'profilePicture'}}" 
+                                 alt="{{lookup ../users targetId 'userName'}}" 
+                                 class="target-image">
+                            <a href="/reviews/user/{{targetId}}">
+                                {{lookup ../users targetId 'firstName'}} {{lookup ../users targetId 'lastName'}}
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="review-content">
+                        <div class="review-rating">
+                            <div class="stars-display">
+                                {{#each (range 1 5)}}
+                                    <span class="star {{#if (lte this ../rating)}}filled{{/if}}">★</span>
+                                {{/each}}
+                            </div>
+                            <span class="rating-number">{{rating}}/5</span>
+                        </div>
+                        
+                        {{#if comment}}
+                            <div class="review-comment">
+                                <p>{{comment}}</p>
+                            </div>
+                        {{else}}
+                            <div class="review-comment empty">
+                                <p>No comment provided</p>
+                            </div>
+                        {{/if}}
+                        
+                        <div class="review-meta">
+                            <span class="review-date">{{formatDate timestamp}}</span>
+                            
+                            {{#if (eq reviewerId ../currentUser.id)}}
+                                <a href="/reviews/edit/{{_id}}" class="edit-link">Edit Review</a>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        <div class="no-reviews">
+            <p>No reviews have been submitted for this group yet.</p>
+            
+            {{#if (isMember group currentUser.id)}}
+                <p>Be the first to review a group member!</p>
+                <a href="/reviews/new/{{group._id}}" class="btn-primary">Write a Review</a>
+            {{else}}
+                <p>Only group members can submit reviews.</p>
+            {{/if}}
+        </div>
+    {{/if}}
+</div>
+
+<style>
+.group-reviews-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1rem;
+}
+
+.group-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.group-details p {
+    margin: 0.5rem 0;
+}
+
+.group-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+.reviews-stats {
+    margin-bottom: 2rem;
+}
+
+.reviews-stats h2 {
+    margin-bottom: 1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.stat-label {
+    display: block;
+    margin-top: 0.5rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.reviewer-image, .target-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.reviewer-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.review-username {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.review-for {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.review-for a {
+    color: #343a40;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.review-for a:hover {
+    text-decoration: underline;
+}
+
+.review-content {
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.review-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.stars-display {
+    display: flex;
+}
+
+.star {
+    color: #ccc;
+    font-size: 1.5rem;
+}
+
+.star.filled {
+    color: #ffc107;
+}
+
+.rating-number {
+    font-weight: bold;
+    color: #343a40;
+}
+
+.review-comment {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.review-comment p {
+    margin: 0;
+    color: #495057;
+}
+
+.review-comment.empty p {
+    font-style: italic;
+    color: #6c757d;
+}
+
+.review-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.edit-link {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.edit-link:hover {
+    text-decoration: underline;
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-reviews p:first-child {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.no-reviews .btn-primary {
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .group-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .review-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .review-for {
+        margin-top: 0.5rem;
+    }
+}
+</style>
+
+<script>
+// Any JavaScript can be added here if needed for interactivity
+</script>

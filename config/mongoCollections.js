@@ -20,3 +20,4 @@ export const badges = getCollectionFn("badges");
 export const userBadges = getCollectionFn("userBadges");
 export const groups = getCollectionFn("groups");
 export const schedule = getCollectionFn("schedule");
+export const reviews = getCollectionFn("reviews");
