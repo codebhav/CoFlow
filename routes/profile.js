@@ -366,7 +366,25 @@ router.route("/business").get(
  * Will be fully implemented later with Cloudinary
  */
 router.route("/upload").get(middleware.authenticationMiddleware, (req, res) => {
-	res.render("profile-upload", { title: "Upload Profile Picture" });
+	// Get user data from session
+	const userId = req.session.user.id;
+
+	// Find user to pass to the template
+	userdata
+		.findUserById(userId)
+		.then((user) => {
+			res.render("profile-upload", {
+				title: "Upload Profile Picture",
+				user: user,
+			});
+		})
+		.catch((error) => {
+			console.error("Error fetching user for upload:", error);
+			res.status(500).render("error", {
+				title: "Error",
+				message: "Failed to load profile upload page",
+			});
+		});
 });
 
 export default router;

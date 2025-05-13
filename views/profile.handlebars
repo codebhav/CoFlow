@@ -2,6 +2,9 @@
 {{#if error}}
     <p id="error" class="error">{{error}}</p>
 {{/if}}
+{{#if success}}
+    <p id="success" class="success">{{success}}</p>
+{{/if}}
 {{#if user}}
 <div id="profile-container">
     <form action="/profile" method="POST" id="profile-form">
@@ -11,12 +14,22 @@
             <button type="button" id="cancel-edit-btn" style="display: none;">Cancel</button>
         </div>
         
-        <img name="shownPic", id = "shownPic" src="{{user.profilePicture}}" alt="shownPic">
-        <label for="uploadPic">Choose an image:</label>
-        <input type="file" id="uploadPic" name="uploadPic" accept="image/*" readonly disabled>
-        <input type="text" id="profilePicture" name="profilePicture" value="{{user.profilePicture}}" style="display:none;" >
-         <div>
-            <div>Rating:{{user.rating}}</div>
+        <div class="profile-picture-section">
+            <div class="profile-image-container">
+                <img id="profile-image" src="{{user.profilePicture}}" alt="Profile Picture">
+            </div>
+            <div class="profile-image-actions" style="display: none;">
+                <a href="/profile/upload" class="btn-upload-image">Change Profile Picture</a>
+            </div>
+        </div>
+        
+        <input type="hidden" id="profilePicture" name="profilePicture" value="{{user.profilePicture}}">
+        
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <span class="stat-label">Rating:</span>
+                <span class="stat-value">{{#if user.rating}}{{user.rating}}{{else}}N/A{{/if}}</span>
+            </div>
         </div>
         
         <h2>Basic Information</h2>
@@ -77,22 +90,20 @@
         </div>
         
         <div class="form-group">
-            <label for="city">City (USA):</label>
+            <label for="city">City:</label>
             <input type="text" id="city" name="city" value="{{user.city}}" readonly>
             <div class="error-message" id="city-error"></div>
         </div>
-        <div>
-            <div>Age:{{user.age}}</div>
-        </div>
-
+        
         <div class="form-group">
             <label for="dob">Date of Birth:</label>
             <input type="date" id="dob" name="dob" value="{{user.dob}}" readonly>
             <div class="error-message" id="dob-error"></div>
+            <div class="age-display">Age: {{user.age}}</div>
         </div>
 
         <div class="form-group">
-            <label for="courses">Courses:</label>
+            <label for="courses">Courses (comma-separated):</label>
             <input type="text" id="courses" name="courses" value="{{user.courses}}" readonly>
             <div class="error-message" id="courses-error"></div>
         </div>
@@ -136,3 +147,5 @@
     <p>You are not logged in.</p>
     <p><a href="/auth/login">Login</a></p>
 {{/if}}
+
+<script src="/public/js/profile.js"></script>
