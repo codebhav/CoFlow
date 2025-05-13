@@ -1,0 +1,247 @@
+<div class="create-group-container">
+    <h1>Create a New Study Group</h1>
+
+    {{#if error}}
+        <div class="alert alert-danger">
+            {{error}}
+        </div>
+    {{/if}}
+
+    <form id="create-group-form" action="/groups/create" method="POST">
+        <div class="form-section">
+            <h2>Basic Information</h2>
+            
+            <div class="form-group required">
+                <label for="groupName">Group Name:</label>
+                <input type="text" id="groupName" name="groupName" value="{{groupName}}" required>
+                <div class="form-help">Choose a descriptive name for your group</div>
+            </div>
+            
+            <div class="form-group required">
+                <label for="course">Course:</label>
+                <input type="text" id="course" name="course" value="{{course}}" placeholder="e.g., CS-546" required>
+                <div class="form-help">Enter course code (e.g., CS-546)</div>
+            </div>
+            
+            <div class="form-group required">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="4" required>{{description}}</textarea>
+                <div class="form-help">Describe your group's goals, topics, or requirements</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Meeting Details</h2>
+            
+            <div class="form-group required">
+                <label for="location">Location:</label>
+                <select id="location" name="location" required>
+                    <option value="">Select a location</option>
+                    {{#each locations}}
+                        <option value="{{this}}" {{#if (eq ../location this)}}selected{{/if}}>{{this}}</option>
+                    {{/each}}
+                </select>
+            </div>
+            
+            <div class="form-group required">
+                <label for="meetingDate">Meeting Date:</label>
+                <input type="date" id="meetingDate" name="meetingDate" value="{{meetingDate}}" min="{{currentDate}}" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group required">
+                    <label for="startTime">Start Time:</label>
+                    <input type="time" id="startTime" name="startTime" value="{{startTime}}" required>
+                </div>
+                
+                <div class="form-group required">
+                    <label for="endTime">End Time:</label>
+                    <input type="time" id="endTime" name="endTime" value="{{endTime}}" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Group Settings</h2>
+            
+            <div class="form-group required">
+                <label for="groupType">Group Type:</label>
+                <select id="groupType" name="groupType" required>
+                    <option value="">Select a type</option>
+                    {{#each groupTypes}}
+                        <option value="{{this}}" {{#if (eq ../groupType this)}}selected{{/if}}>{{capitalize this}}</option>
+                    {{/each}}
+                </select>
+            </div>
+            
+            <div class="form-group required">
+                <label for="capacity">Maximum Capacity:</label>
+                <input type="number" id="capacity" name="capacity" value="{{capacity}}" min="2" max="15" required>
+                <div class="form-help">Between 2 and 15 members</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="tags">Tags (comma-separated):</label>
+                <input type="text" id="tags" name="tags" value="{{tags}}" placeholder="e.g., javascript, database, final-project">
+                <div class="form-help">Optional keywords to help others find your group</div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Create Group</button>
+            <a href="/groups/myGroups" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<!-- Client-side validation script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('create-group-form');
+    const startTimeInput = document.getElementById('startTime');
+    const endTimeInput = document.getElementById('endTime');
+    const meetingDateInput = document.getElementById('meetingDate');
+    
+    // Set min date to today
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0];
+    meetingDateInput.min = dateString;
+    
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        
+        // Check end time is after start time
+        if (startTimeInput.value && endTimeInput.value) {
+            if (startTimeInput.value >= endTimeInput.value) {
+                alert('End time must be after start time');
+                endTimeInput.focus();
+                isValid = false;
+            }
+        }
+        
+        // Check meeting date is not in the past
+        if (meetingDateInput.value) {
+            const selectedDate = new Date(meetingDateInput.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                alert('Meeting date cannot be in the past');
+                meetingDateInput.focus();
+                isValid = false;
+            }
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
+
+<style>
+.create-group-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.3rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.form-group.required label::after {
+    content: " *";
+    color: #e74c3c;
+}
+
+.form-help {
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.8rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+    border: none;
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-danger {
+    padding: 1rem;
+    background-color: #f8d7da;
+    color: #721c24;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+</style>
