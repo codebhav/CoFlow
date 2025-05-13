@@ -1,5 +1,7 @@
 import BadgeService from "../services/badgeService.js";
 import { findUserById } from "../data/user.js";
+import { users } from "../config/mongoCollections.js";
+import { ObjectId } from "mongodb";
 
 // Track login activity (for Active User badge)
 export const trackLogin = async (req, res, next) => {
@@ -8,11 +10,19 @@ export const trackLogin = async (req, res, next) => {
 			return next();
 		}
 
-		const user = await findUserById(req.session.user.id);
+		const userId = req.session.user.id;
+		const user = await findUserById(userId);
 		if (!user) return next();
 
 		// Update login count
-		user.loginCount = (user.loginCount || 0) + 1;
+		const loginCount = (user.loginCount || 0) + 1;
+
+		// Update user in database
+		const userCollection = await users();
+		await userCollection.updateOne(
+			{ _id: new ObjectId(userId) },
+			{ $set: { loginCount: loginCount } }
+		);
 
 		// Check for badges
 		await BadgeService.checkAndAwardBadges(user, "login");
@@ -30,14 +40,22 @@ export const trackGroupJoin = async (req, res, next) => {
 			return next();
 		}
 
-		const user = await findUserById(req.session.user.id);
+		const userId = req.session.user.id;
+		const user = await findUserById(userId);
 		if (!user) return next();
 
 		// Update group join count
-		user.groupJoinCount = (user.groupJoinCount || 0) + 1;
+		const groupJoinCount = (user.groupJoinCount || 0) + 1;
+
+		// Update user in database
+		const userCollection = await users();
+		await userCollection.updateOne(
+			{ _id: new ObjectId(userId) },
+			{ $set: { groupJoinCount: groupJoinCount } }
+		);
 
 		// Check for badges
-		await BadgeService.checkAndAwardBadges(user, "group_join");
+		await BadgeService.checkAndAwardBadges(user, "groupJoin");
 		next();
 	} catch (error) {
 		console.error("Error tracking group join:", error);
@@ -45,18 +63,26 @@ export const trackGroupJoin = async (req, res, next) => {
 	}
 };
 
-// Track rating activity (for 5-Star badge)
+// Track rating activity (for Social King badge)
 export const trackRating = async (req, res, next) => {
 	try {
 		if (!req.session || !req.session.user) {
 			return next();
 		}
 
-		const user = await findUserById(req.session.user.id);
+		const userId = req.session.user.id;
+		const user = await findUserById(userId);
 		if (!user) return next();
 
 		// Update rating count
-		user.ratingCount = (user.ratingCount || 0) + 1;
+		const ratingCount = (user.ratingCount || 0) + 1;
+
+		// Update user in database
+		const userCollection = await users();
+		await userCollection.updateOne(
+			{ _id: new ObjectId(userId) },
+			{ $set: { ratingCount: ratingCount } }
+		);
 
 		// Check for badges
 		await BadgeService.checkAndAwardBadges(user, "rating");
