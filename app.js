@@ -1,48 +1,116 @@
-import express from 'express';
+import express from "express";
 const app = express();
-import configRoutes from './routes/index.js';
-import { engine } from 'express-handlebars'; // Correct import for ESM
-import session from 'express-session';
-import middleware from './middleware.js';
-import path from "path";
-import { dbConnection, getMongoClient } from './config/mongoConnection.js';
+import configRoutes from "./routes/index.js";
+import { engine } from "express-handlebars";
+import session from "express-session";
+import middleware from "./middleware.js";
+import { dbConnection, getMongoClient } from "./config/mongoConnection.js";
+import helmet from "helmet";
+import xss from "xss-clean";
 
-const client = await getMongoClient(); // Get the MongoClient instance
-const db = await dbConnection();
+// Generate a random session secret (in production, use an env variable)
+const SESSION_SECRET =
+	process.env.SESSION_SECRET ||
+	Math.random().toString(36).substring(2) +
+		Math.random().toString(36).substring(2);
 
-app.use('/public', express.static('public'));
+// Database connection setup
+try {
+	const client = await getMongoClient();
+	const db = await dbConnection();
+	console.log("Connected to MongoDB successfully");
+} catch (error) {
+	console.error("Failed to connect to MongoDB:", error);
+	process.exit(1); // Exit if we can't connect to the database
+}
+
+// Security middlewares
+app.use(helmet({ contentSecurityPolicy: false })); // Disable CSP for development
+app.use(xss()); // Prevent XSS attacks
+
+// Static file serving
+app.use("/public", express.static("public"));
+
+// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(session({
-    name: 'CoFlow',
-    secret: 'your-secret-key',
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-        maxAge: 1000 * 60 * 60 * 24 // 1 day
-    }
-}));
-app.engine('handlebars', engine({
-    defaultLayout: 'main',
-    helpers: {
-        getCurrentYear: () => new Date().getFullYear(),
-        eq: (v1, v2) => v1 === v2, // Register the 'eq' helper
-        add: (v1, v2) => v1 + v2,
-        //更新了标准时间转换
-        formatTime: (date) => {
-            if (!date) return '';
-            const d = new Date(date);
-            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-}
-})); // Use the imported 'engine'
-app.set('view engine', 'handlebars');
+// Session configuration
+app.use(
+	session({
+		name: "CoFlow",
+		secret: SESSION_SECRET,
+		resave: false,
+		saveUninitialized: false, // Changed to false for GDPR compliance
+		cookie: {
+			httpOnly: true, // Helps protect against XSS
+			secure: process.env.NODE_ENV === "production", // HTTPS only in production
+			maxAge: 1000 * 60 * 60 * 24, // 1 day
+		},
+	})
+);
 
-app.use(middleware.loggingMiddleware)
+// Handlebars setup
+app.engine(
+	"handlebars",
+	engine({
+		defaultLayout: "main",
+		helpers: {
+			getCurrentYear: () => new Date().getFullYear(),
+			eq: (v1, v2) => v1 === v2,
+			add: (v1, v2) => v1 + v2,
+			formatTime: (date) => {
+				if (!date) return "";
+				const d = new Date(date);
+				return d.toLocaleTimeString([], {
+					hour: "2-digit",
+					minute: "2-digit",
+				});
+			},
+			json: (context) => JSON.stringify(context), // Add helper for JSON stringification
+			// Additional safety helpers for output
+			safe: (content) => {
+				if (!content) return "";
+				return new Handlebars.SafeString(content);
+			},
+			truncate: (text, length) => {
+				if (!text) return "";
+				if (text.length <= length) return text;
+				return text.substring(0, length) + "...";
+			},
+			formatDate: (date) => {
+				if (!date) return "";
+				const d = new Date(date);
+				return d.toLocaleDateString();
+			},
+			capitalize: (text) => {
+				if (!text) return "";
+				return text.charAt(0).toUpperCase() + text.slice(1);
+			},
+		},
+	})
+);
+app.set("view engine", "handlebars");
+
+// Apply custom middlewares
+app.use(middleware.loggingMiddleware);
+app.use(middleware.xssProtectionMiddleware);
+
+// Configure routes
 configRoutes(app);
 
-app.listen(3000, () => {
-    console.log("We've now got a server!");
-    console.log('Your routes will be running on http://localhost:3000');
+// Error handling middleware
+app.use((err, req, res, next) => {
+	console.error("Global error handler caught:", err);
+	res.status(500).render("error", {
+		title: "Error",
+		message: "An unexpected error occurred",
+		error: process.env.NODE_ENV === "development" ? err.message : undefined,
+	});
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+	console.log(`Server running on http://localhost:${PORT}`);
 });

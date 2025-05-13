@@ -1,21 +1,32 @@
 {
-    "dependencies": {
-        "bcrypt": "^5.1.1",
-        "express": "^4.2.0",
-        "express-handlebars": "^8.0.1",
-        "express-session": "^1.18.1",
-        "mongodb": "^6.15.0",
-        "mongoose": "^8.14.1"
-    },
-    "name": "coflow",
-    "version": "1.0.0",
-    "description": "Repository will be made private once files are added.",
-    "main": "app.js",
-    "type": "module",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node app.js"
-    },
-    "author": "Team11",
-    "license": "ISC"
+	"name": "coflow",
+	"version": "1.0.0",
+	"description": "Repository will be made private once files are added.",
+	"main": "app.js",
+	"type": "module",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node app.js",
+		"dev": "nodemon app.js",
+		"seed": "node tasks/seed.js"
+	},
+	"author": "Team11",
+	"license": "MIT",
+	"dependencies": {
+		"bcrypt": "^5.1.1",
+		"cloudinary": "^2.6.1",
+		"dotenv": "^16.5.0",
+		"express": "^4.2.0",
+		"express-handlebars": "^8.0.1",
+		"express-session": "^1.18.1",
+		"helmet": "^8.1.0",
+		"mongodb": "^6.15.0",
+		"mongoose": "^8.14.1",
+		"multer": "^1.4.5-lts.2",
+		"xss": "^1.0.15",
+		"xss-clean": "^0.1.4"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.10"
+	}
 }
