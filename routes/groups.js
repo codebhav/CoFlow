@@ -20,7 +20,7 @@ router.route("/").get(
 	asyncHandler(async (req, res) => {
 		try {
 			// Get user ID from session
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 
 			// Get all available groups with user role
 			let groups = await groupData.getAllNonFullGroups();
@@ -55,7 +55,7 @@ router.route("/search").post(
 			}
 
 			// Get user ID from session
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 
 			// Search for groups with user role
 			let groups = await groupData.searchGroups(search, userId);
@@ -127,7 +127,7 @@ router
 				} = req.body;
 
 				// Get user ID from session
-				const userId = req.session.user.id;
+				const userId = req.session.user._id;
 
 				// Process tags (comma-separated string to array)
 				let tagArray = [];
@@ -209,7 +209,7 @@ router.route("/:id").get(
 	asyncHandler(async (req, res) => {
 		try {
 			const groupId = req.params.id;
-			const userId = req.session.user.id;
+			const userId = req.session._id;
 
 			// Validate group ID
 			Validation.checkId(groupId, "Group ID");
@@ -268,7 +268,7 @@ router
 		asyncHandler(async (req, res) => {
 			try {
 				const groupId = req.params.id;
-				const userId = req.session.user.id;
+				const userId = req.session.user._id;
 
 				// Validate group ID
 				Validation.checkId(groupId, "Group ID");
@@ -342,7 +342,7 @@ router
 		asyncHandler(async (req, res) => {
 			try {
 				const groupId = req.params.id;
-				const userId = req.session.user.id;
+				const userId = req.session.user._id;
 
 				// Validate group ID
 				Validation.checkId(groupId, "Group ID");
@@ -446,7 +446,7 @@ router
 		ensureAuthenticated,
 		asyncHandler(async (req, res) => {
 			try {
-				const userId = req.session.user.id;
+				const userId = req.session.user._id;
 
 				// Get groups created by user
 				const ownedGroups = await groupData.getGroupDataForMember(
@@ -481,7 +481,7 @@ router
 		ensureAuthenticated,
 		asyncHandler(async (req, res) => {
 			try {
-				const userId = req.session.user.id;
+				const userId = req.session.user._id;
 
 				// Extract form data for new group
 				const {
@@ -517,7 +517,7 @@ router
 				console.error("Error creating group:", error);
 
 				// Get user's groups for re-rendering page
-				const userId = req.session.user.id;
+				const userId = req.session.user._id;
 				const ownedGroups = await groupData.getGroupDataForMember(
 					userId
 				);
@@ -544,7 +544,7 @@ router.route("/reqJoin").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 			const { formId } = req.body;
 
 			if (!formId) {
@@ -591,7 +591,7 @@ router.route("/pendingUsers").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 			const { groupId } = req.body;
 
 			if (!groupId) {
@@ -622,7 +622,7 @@ router.route("/approvedUsers").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 			const { groupId } = req.body;
 
 			if (!groupId) {
@@ -653,7 +653,7 @@ router.route("/acceptUser").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 			const { userId: targetUserId, groupId } = req.body;
 
 			if (!targetUserId || !groupId) {
@@ -700,7 +700,7 @@ router.route("/rejectUser").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session._id;
 			const { userId: targetUserId, groupId } = req.body;
 
 			if (!targetUserId || !groupId) {
@@ -747,7 +747,7 @@ router.route("/removeUser").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 			const { userId: targetUserId, groupId } = req.body;
 
 			if (!targetUserId || !groupId) {
@@ -794,7 +794,7 @@ router.route("/leave").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 			const { groupId } = req.body;
 
 			if (!groupId) {
@@ -841,7 +841,7 @@ router.route("/cancelReq").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session._id;
 			const { groupId } = req.body;
 
 			if (!groupId) {
@@ -888,7 +888,7 @@ router.route("/deleteGroup").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user.id;
+			const userId = req.session.user._id;
 			const { groupId } = req.body;
 
 			if (!groupId) {
