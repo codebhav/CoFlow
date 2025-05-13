@@ -1,5 +1,6 @@
 import { groups } from "../config/mongoCollections.js";
 import { users } from "../config/mongoCollections.js";
+import * as scheduleModel from "../models/Schedule.js";
 import { ObjectId } from "mongodb";
 import Validation from "../helpers.js";
 import {

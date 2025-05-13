@@ -1,0 +1,190 @@
+<div class="settings-container">
+  <h1>Schedule Notification Settings</h1>
+  
+  {{#if success}}
+    <div class="alert alert-success">
+      {{success}}
+    </div>
+  {{/if}}
+  
+  {{#if error}}
+    <div class="alert alert-danger">
+      {{error}}
+    </div>
+  {{/if}}
+  
+  <div class="settings-card">
+    <form action="/schedule/settings" method="POST">
+      <div class="form-group">
+        <label for="emailReminders">Email Reminders:</label>
+        <div class="toggle-container">
+          <input type="checkbox" id="emailReminders" name="emailReminders" class="toggle-checkbox" {{#if notificationSettings.emailReminders}}checked{{/if}}>
+          <label for="emailReminders" class="toggle-label"></label>
+        </div>
+        <p class="form-help">Receive email reminders before scheduled study sessions</p>
+      </div>
+      
+      <div class="form-group">
+        <label for="reminderTime">Reminder Time:</label>
+        <select id="reminderTime" name="reminderTime" {{#unless notificationSettings.emailReminders}}disabled{{/unless}}>
+          <option value="1h" {{#if (eq notificationSettings.reminderTime "1h")}}selected{{/if}}>1 hour before</option>
+          <option value="2h" {{#if (eq notificationSettings.reminderTime "2h")}}selected{{/if}}>2 hours before</option>
+          <option value="4h" {{#if (eq notificationSettings.reminderTime "4h")}}selected{{/if}}>4 hours before</option>
+          <option value="12h" {{#if (eq notificationSettings.reminderTime "12h")}}selected{{/if}}>12 hours before</option>
+          <option value="24h" {{#if (eq notificationSettings.reminderTime "24h")}}selected{{/if}}>1 day before</option>
+          <option value="48h" {{#if (eq notificationSettings.reminderTime "48h")}}selected{{/if}}>2 days before</option>
+        </select>
+        <p class="form-help">When to send reminders for upcoming study sessions</p>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" class="btn-save">Save Settings</button>
+        <a href="/schedule" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const emailRemindersCheckbox = document.getElementById('emailReminders');
+    const reminderTimeSelect = document.getElementById('reminderTime');
+    
+    // Toggle reminder time select based on checkbox state
+    emailRemindersCheckbox.addEventListener('change', function() {
+      reminderTimeSelect.disabled = !this.checked;
+    });
+  });
+</script>
+
+<style>
+.settings-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.settings-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #343a40;
+}
+
+.form-help {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+}
+
+select:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.toggle-container {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggle-checkbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.toggle-label:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.toggle-checkbox:checked + .toggle-label {
+  background-color: #2196F3;
+}
+
+.toggle-checkbox:checked + .toggle-label:before {
+  transform: translateX(26px);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-save, .btn-cancel {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-save {
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+  text-decoration: none;
+}
+</style>

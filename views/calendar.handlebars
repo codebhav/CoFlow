@@ -1,0 +1,150 @@
+<div class="calendar-container">
+	<h1>Calendar View</h1>
+
+	<div class="calendar-navigation">
+		<div class="calendar-view-options">
+			<button id="month-view-btn" class="view-btn active">Month</button>
+			<button id="week-view-btn" class="view-btn">Week</button>
+			<button id="day-view-btn" class="view-btn">Day</button>
+		</div>
+
+		<div class="calendar-controls">
+			<button id="prev-btn">&lt; Previous</button>
+			<span id="current-view-title"></span>
+			<button id="next-btn">Next &gt;</button>
+			<button id="today-btn">Today</button>
+		</div>
+	</div>
+
+	<div id="calendar"></div>
+
+	<!-- Event Details Modal -->
+	<div id="event-modal" class="modal">
+		<div class="modal-content">
+			<span class="close-modal">&times;</span>
+			<h2 id="event-title"></h2>
+			<div class="event-details">
+				<p><strong>Date:</strong> <span id="event-date"></span></p>
+				<p><strong>Time:</strong> <span id="event-time"></span></p>
+				<p><strong>Location:</strong>
+					<span id="event-location"></span></p>
+				<p><strong>Course:</strong> <span id="event-course"></span></p>
+				<div id="event-description"></div>
+			</div>
+			<div class="event-actions">
+				<a id="event-view-group" href="#" class="btn-primary">View Group</a>
+				<button id="event-send-reminder" class="btn-secondary">Send
+					Reminder</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script
+	src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"
+></script>
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css"
+/>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() { // Get calendar
+	events from server data const calendarEvents = JSON.parse('{{{calendarEvents}}}');
+	// Initialize calendar const calendarEl =
+	document.getElementById('calendar'); const calendar = new
+	FullCalendar.Calendar(calendarEl, { initialView: 'dayGridMonth',
+	headerToolbar: false, // We'll use our custom navigation events:
+	calendarEvents, height: 'auto', eventTimeFormat: { hour: '2-digit', minute:
+	'2-digit', meridiem: false, hour12: false }, eventClick: function(info) {
+	showEventDetails(info.event); } }); calendar.render(); updateViewTitle(); //
+	Navigation buttons
+	document.getElementById('prev-btn').addEventListener('click', function() {
+	calendar.prev(); updateViewTitle(); });
+	document.getElementById('next-btn').addEventListener('click', function() {
+	calendar.next(); updateViewTitle(); });
+	document.getElementById('today-btn').addEventListener('click', function() {
+	<!-- views/calendar.handlebars (continued) --> calendar.today();
+	updateViewTitle(); }); // View type buttons
+	document.getElementById('month-view-btn').addEventListener('click',
+	function() { setActiveView('dayGridMonth'); this.classList.add('active');
+	document.getElementById('week-view-btn').classList.remove('active');
+	document.getElementById('day-view-btn').classList.remove('active'); });
+	document.getElementById('week-view-btn').addEventListener('click',
+	function() { setActiveView('timeGridWeek'); this.classList.add('active');
+	document.getElementById('month-view-btn').classList.remove('active');
+	document.getElementById('day-view-btn').classList.remove('active'); });
+	document.getElementById('day-view-btn').addEventListener('click', function()
+	{ setActiveView('timeGridDay'); this.classList.add('active');
+	document.getElementById('month-view-btn').classList.remove('active');
+	document.getElementById('week-view-btn').classList.remove('active'); });
+	function setActiveView(viewName) { calendar.changeView(viewName);
+	updateViewTitle(); } function updateViewTitle() { const dateStr =
+	calendar.view.title;
+	document.getElementById('current-view-title').textContent = dateStr; } //
+	Event details modal const modal = document.getElementById('event-modal');
+	const closeBtn = document.querySelector('.close-modal');
+	closeBtn.addEventListener('click', function() { modal.style.display =
+	'none'; }); window.addEventListener('click', function(event) { if
+	(event.target === modal) { modal.style.display = 'none'; } }); function
+	showEventDetails(event) { const eventData = event.extendedProps; // Set
+	event details in modal document.getElementById('event-title').textContent =
+	event.title; document.getElementById('event-date').textContent =
+	formatDate(event.start); document.getElementById('event-time').textContent =
+	`${formatTime(event.start)} - ${formatTime(event.end)}`;
+	document.getElementById('event-location').textContent = eventData.location
+	|| 'N/A'; document.getElementById('event-course').textContent =
+	eventData.course || 'N/A';
+	document.getElementById('event-description').textContent =
+	eventData.description || 'No description available'; // Set button actions
+	const viewGroupBtn = document.getElementById('event-view-group');
+	viewGroupBtn.href = `/groups/${eventData.groupId}`; const reminderBtn =
+	document.getElementById('event-send-reminder'); reminderBtn.onclick =
+	function() { sendReminder(eventData.groupId); }; // Show modal
+	modal.style.display = 'block'; } function formatDate(date) { const options =
+	{ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; return
+	date.toLocaleDateString(undefined, options); } function formatTime(date) {
+	const hours = date.getHours().toString().padStart(2, '0'); const minutes =
+	date.getMinutes().toString().padStart(2, '0'); return `${hours}:${minutes}`;
+	} function sendReminder(groupId) { fetch('/schedule/send-reminder', {
+	method: 'POST', headers: { 'Content-Type': 'application/json' }, body:
+	JSON.stringify({ groupId }) }) .then(response => response.json()) .then(data
+	=> { if (data.success) { alert('Reminder sent successfully!'); } else {
+	alert(`Failed to send reminder: ${data.message}`); } }) .catch(error => {
+	console.error('Error sending reminder:', error); alert('An error occurred
+	while sending the reminder.'); }); } });
+</script>
+
+<style>
+	.calendar-container { max-width: 1200px; margin: 2rem auto; padding: 1rem; }
+	.calendar-navigation { display: flex; justify-content: space-between;
+	align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+	.calendar-view-options { display: flex; gap: 0.5rem; } .view-btn { padding:
+	0.5rem 1rem; background-color: #f8f9fa; border: 1px solid #dee2e6;
+	border-radius: 4px; cursor: pointer; transition: background-color 0.2s; }
+	.view-btn.active { background-color: #007bff; color: white; border-color:
+	#007bff; } .calendar-controls { display: flex; align-items: center; gap:
+	0.5rem; } #current-view-title { font-weight: bold; margin: 0 1rem;
+	min-width: 150px; text-align: center; } #prev-btn, #next-btn, #today-btn {
+	padding: 0.5rem 1rem; background-color: #f8f9fa; border: 1px solid #dee2e6;
+	border-radius: 4px; cursor: pointer; } #today-btn { background-color:
+	#6c757d; color: white; border-color: #6c757d; } #calendar { border: 1px
+	solid #dee2e6; border-radius: 4px; padding: 1rem; background-color: white;
+	min-height: 600px; } /* Modal Styles */ .modal { display: none; position:
+	fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,
+	0, 0, 0.5); z-index: 1000; } .modal-content { position: relative;
+	background-color: white; margin: 10% auto; padding: 2rem; width: 80%;
+	max-width: 600px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0,
+	0.1); } .close-modal { position: absolute; top: 1rem; right: 1.5rem;
+	font-size: 1.5rem; cursor: pointer; color: #aaa; } .close-modal:hover {
+	color: #555; } .event-details { margin: 1.5rem 0; } .event-details p {
+	margin: 0.5rem 0; } .event-actions { display: flex; gap: 1rem; margin-top:
+	1.5rem; } .btn-primary, .btn-secondary { padding: 0.75rem 1.5rem; border:
+	none; border-radius: 4px; cursor: pointer; font-weight: bold;
+	text-decoration: none; } .btn-primary { background-color: #007bff; color:
+	white; } .btn-secondary { background-color: #6c757d; color: white; } @media
+	(max-width: 768px) { .calendar-navigation { flex-direction: column;
+	align-items: stretch; } .calendar-controls { justify-content: center; }
+	.event-actions { flex-direction: column; } .btn-primary, .btn-secondary {
+	text-align: center; } }
+</style>

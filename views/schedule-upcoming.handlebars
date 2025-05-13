@@ -1,0 +1,277 @@
+<div class="upcoming-container">
+    <h1>Upcoming Meetings</h1>
+    
+    <div class="schedule-tabs">
+        <a href="/schedule/calendar" class="tab-link">Calendar View</a>
+        <a href="/schedule/upcoming" class="tab-link active">Upcoming Meetings</a>
+    </div>
+    
+    {{#if upcomingGroups.length}}
+        <div class="upcoming-list">
+            {{#each upcomingGroups}}
+                <div class="upcoming-card {{#if (eq meetingDate ../today)}}today{{/if}}">
+                    <div class="upcoming-header">
+                        <div class="meeting-info">
+                            <h3>{{groupName}}</h3>
+                            <span class="course-badge">{{course}}</span>
+                            <span class="type-badge {{groupType}}">{{groupType}}</span>
+                        </div>
+                        <div class="time-info">
+                            <div class="date">
+                                {{#if (eq meetingDate ../today)}}
+                                    <span class="today-label">Today</span>
+                                {{else}}
+                                    {{formatDate meetingDate}}
+                                {{/if}}
+                            </div>
+                            <div class="time">{{startTime}} - {{endTime}}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="upcoming-content">
+                        <div class="location">
+                            <strong>Location:</strong> {{location}}
+                        </div>
+                        <div class="description">
+                            <p>{{truncate description 150}}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="upcoming-footer">
+                        <div class="capacity">
+                            <strong>Members:</strong> {{members.length}}/{{capacity}}
+                        </div>
+                        <a href="/groups/{{_id}}" class="view-details">View Details</a>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        <div class="no-meetings">
+            <h3>No upcoming meetings found</h3>
+            <p>You don't have any scheduled study sessions coming up.</p>
+            <a href="/groups" class="browse-groups-btn">Browse Available Groups</a>
+            <a href="/groups/create" class="create-group-btn">Create a New Group</a>
+        </div>
+    {{/if}}
+</div>
+
+<style>
+.upcoming-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem;
+}
+
+.schedule-tabs {
+    display: flex;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.tab-link {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    color: #495057;
+    font-weight: 500;
+    position: relative;
+}
+
+.tab-link.active {
+    color: #007bff;
+}
+
+.tab-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #007bff;
+}
+
+.upcoming-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.upcoming-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.upcoming-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.upcoming-card.today {
+    border-left: 4px solid #ff5722;
+}
+
+.upcoming-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.meeting-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: #343a40;
+}
+
+.course-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+}
+
+.type-badge.study-group {
+    background-color: #007bff;
+}
+
+.type-badge.project-group {
+    background-color: #28a745;
+}
+
+.time-info {
+    text-align: right;
+}
+
+.date {
+    font-weight: bold;
+    color: #343a40;
+    margin-bottom: 0.25rem;
+}
+
+.today-label {
+    background-color: #ff5722;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.time {
+    color: #6c757d;
+}
+
+.upcoming-content {
+    padding: 1.5rem;
+}
+
+.location {
+    margin-bottom: 0.75rem;
+    color: #495057;
+}
+
+.description p {
+    margin: 0;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+.upcoming-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.capacity {
+    color: #495057;
+}
+
+.view-details {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.view-details:hover {
+    background-color: #0069d9;
+}
+
+.no-meetings {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-meetings h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #343a40;
+}
+
+.no-meetings p {
+    margin-bottom: 1.5rem;
+    color: #6c757d;
+}
+
+.browse-groups-btn, .create-group-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    margin: 0 0.5rem;
+}
+
+.browse-groups-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.create-group-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .upcoming-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .time-info {
+        text-align: left;
+        margin-top: 1rem;
+    }
+    
+    .upcoming-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+}
+</style>

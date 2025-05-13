@@ -257,6 +257,93 @@ export const json = (context) => {
 	return JSON.stringify(context);
 };
 
+/**
+ * Helper to group schedule events by date
+ * @param {Array} events - Array of schedule events
+ * @param {Object} options - Handlebars options
+ * @returns {string} - Rendered HTML
+ */
+export const groupByDate = (events, options) => {
+	const groups = {};
+
+	// Group events by date
+	events.forEach((event) => {
+		if (!groups[event.meetingDate]) {
+			groups[event.meetingDate] = {
+				date: event.meetingDate,
+				events: [],
+			};
+		}
+
+		groups[event.meetingDate].events.push(event);
+	});
+
+	// Sort events within each group by start time
+	Object.values(groups).forEach((group) => {
+		group.events.sort((a, b) => {
+			return a.startTime.localeCompare(b.startTime);
+		});
+	});
+
+	// Sort groups by date
+	const sortedGroups = Object.values(groups).sort((a, b) => {
+		return a.date.localeCompare(b.date);
+	});
+
+	// Render each group
+	let result = "";
+	sortedGroups.forEach((group) => {
+		result += options.fn(group);
+	});
+
+	return result;
+};
+
+/**
+ * Helper to format date for headings
+ * @param {string} dateStr - Date string (YYYY-MM-DD)
+ * @returns {string} - Formatted date string
+ */
+export const formatDateHeading = (dateStr) => {
+	if (!dateStr) return "";
+
+	const date = new Date(dateStr);
+	if (isNaN(date.getTime())) return dateStr;
+
+	// Check if date is today
+	const today = new Date();
+	const isToday =
+		date.getDate() === today.getDate() &&
+		date.getMonth() === today.getMonth() &&
+		date.getFullYear() === today.getFullYear();
+
+	// Check if date is tomorrow
+	const tomorrow = new Date(today);
+	tomorrow.setDate(tomorrow.getDate() + 1);
+	const isTomorrow =
+		date.getDate() === tomorrow.getDate() &&
+		date.getMonth() === tomorrow.getMonth() &&
+		date.getFullYear() === tomorrow.getFullYear();
+
+	// Format options
+	const options = {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	};
+
+	let formattedDate = date.toLocaleDateString(undefined, options);
+
+	if (isToday) {
+		formattedDate = `Today (${formattedDate})`;
+	} else if (isTomorrow) {
+		formattedDate = `Tomorrow (${formattedDate})`;
+	}
+
+	return formattedDate;
+};
+
 export default {
 	safe,
 	escape,

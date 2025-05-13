@@ -7,6 +7,7 @@ import groupRoutes from "./groups.js";
 import uploadRoutes from "./upload.js";
 import badgeRoutes from "./badge.js";
 import reviewRoutes from "./reviews.js"; // Add this line
+import scheduleRoutes from "./schedule.js";
 import { static as staticDir } from "express";
 import { logAuthStatus } from "../middleware/auth-middleware.js";
 
@@ -30,7 +31,8 @@ const configureRoutes = (app) => {
 	app.use("/groups", groupRoutes);
 	app.use("/upload", uploadRoutes);
 	app.use("/badges", badgeRoutes);
-	app.use("/reviews", reviewRoutes); // Add this line
+	app.use("/reviews", reviewRoutes);
+	app.use("/schedule", scheduleRoutes);
 
 	// 404 handler for undefined routes
 	app.use("*", (req, res) => {

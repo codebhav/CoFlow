@@ -1,0 +1,128 @@
+<div class="calendar-container">
+	<h1>My Schedule</h1>
+
+	<div class="schedule-tabs">
+		<a href="/schedule/calendar" class="tab-link active">Calendar View</a>
+		<a href="/schedule/upcoming" class="tab-link">Upcoming Meetings</a>
+	</div>
+
+	<div class="calendar-options">
+		<div class="view-options">
+			<button
+				class="view-btn active"
+				data-view="dayGridMonth"
+			>Month</button>
+			<button class="view-btn" data-view="timeGridWeek">Week</button>
+			<button class="view-btn" data-view="timeGridDay">Day</button>
+			<button class="view-btn" data-view="listWeek">List</button>
+		</div>
+
+		<div class="legend">
+			<div class="legend-item">
+				<span class="color-box owner"></span>
+				<span>Groups You Own</span>
+			</div>
+			<div class="legend-item">
+				<span class="color-box member"></span>
+				<span>Groups You Joined</span>
+			</div>
+		</div>
+	</div>
+
+	<div id="calendar"></div>
+
+	<div id="event-modal" class="modal">
+		<div class="modal-content">
+			<span class="close-modal">&times;</span>
+			<h2 id="event-title"></h2>
+			<div id="event-details"></div>
+			<div class="modal-actions">
+				<a id="view-group-btn" href="#" class="btn-primary">View Group
+					Details</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<link
+	href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css"
+	rel="stylesheet"
+/>
+<script
+	src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"
+></script>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() { // Initialize
+	calendar const calendarEl = document.getElementById('calendar'); const
+	calendar = new FullCalendar.Calendar(calendarEl, { initialView:
+	'dayGridMonth', headerToolbar: { left: 'prev,next today', center: 'title',
+	right: '' }, events:
+	{{{calendarEvents}}}, eventTimeFormat: { hour: '2-digit', minute: '2-digit',
+	meridiem: 'short' }, eventClick: function(info) { // Prevent redirect
+	info.jsEvent.preventDefault(); // Show modal with event details const modal
+	= document.getElementById('event-modal'); const title =
+	document.getElementById('event-title'); const details =
+	document.getElementById('event-details'); const viewBtn =
+	document.getElementById('view-group-btn'); title.textContent =
+	info.event.title; let detailsHTML = ` <p><strong>Date:</strong> ${new
+	Date(info.event.start).toLocaleDateString()}</p> <p><strong>Time:</strong>
+	${new Date(info.event.start).toLocaleTimeString([], {hour: '2-digit',
+	minute:'2-digit'})} - ${new Date(info.event.end).toLocaleTimeString([],
+	{hour: '2-digit', minute:'2-digit'})}</p> <p><strong>Course:</strong>
+	${info.event.extendedProps.course}</p> <p><strong>Location:</strong>
+	${info.event.extendedProps.location}</p> <p><strong>Type:</strong>
+	${info.event.extendedProps.type}</p> <p><strong>Role:</strong>
+	${info.event.extendedProps.isOwner ? 'Group Owner' : 'Group Member'}</p> `;
+	details.innerHTML = detailsHTML; viewBtn.href = info.event.url;
+	modal.style.display = 'block'; }, eventClassNames: function(arg) { return
+	arg.event.extendedProps.isOwner ? ['owner-event'] : ['member-event']; } });
+	calendar.render(); // View buttons
+	document.querySelectorAll('.view-btn').forEach(button => {
+	button.addEventListener('click', function() {
+	document.querySelectorAll('.view-btn').forEach(btn =>
+	btn.classList.remove('active')); this.classList.add('active');
+	calendar.changeView(this.dataset.view); }); }); // Modal close
+	document.querySelector('.close-modal').addEventListener('click', function()
+	{ document.getElementById('event-modal').style.display = 'none'; }); //
+	Close modal when clicking outside window.addEventListener('click',
+	function(event) { const modal = document.getElementById('event-modal'); if
+	(event.target === modal) { modal.style.display = 'none'; } }); });
+</script>
+
+<style>
+	.calendar-container { max-width: 1200px; margin: 2rem auto; padding: 1rem; }
+	.schedule-tabs { display: flex; margin-bottom: 2rem; border-bottom: 1px
+	solid #dee2e6; } .tab-link { padding: 0.75rem 1.5rem; text-decoration: none;
+	color: #495057; font-weight: 500; position: relative; } .tab-link.active {
+	color: #007bff; } .tab-link.active::after { content: ''; position: absolute;
+	bottom: -1px; left: 0; right: 0; height: 2px; background-color: #007bff; }
+	.calendar-options { display: flex; justify-content: space-between;
+	align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+	.view-options { display: flex; gap: 0.5rem; } .view-btn { padding: 0.5rem
+	1rem; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius:
+	4px; cursor: pointer; font-size: 0.9rem; } .view-btn.active {
+	background-color: #007bff; color: white; border-color: #007bff; } .legend {
+	display: flex; gap: 1rem; } .legend-item { display: flex; align-items:
+	center; gap: 0.5rem; font-size: 0.85rem; } .color-box { width: 16px; height:
+	16px; border-radius: 4px; } .color-box.owner { background-color: #4caf50; }
+	.color-box.member { background-color: #2196f3; } #calendar {
+	background-color: white; padding: 1rem; border-radius: 8px; box-shadow: 0
+	2px 10px rgba(0, 0, 0, 0.1); } /* Event styling */ .owner-event {
+	background-color: #4caf50 !important; border-color: #3d8b40 !important; }
+	.member-event { background-color: #2196f3 !important; border-color: #0c7cd5
+	!important; } /* Modal styles */ .modal { display: none; position: fixed;
+	z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto;
+	background-color: rgba(0, 0, 0, 0.5); } .modal-content { background-color:
+	white; margin: 10% auto; padding: 2rem; border-radius: 8px; box-shadow: 0
+	5px 15px rgba(0, 0, 0, 0.3); width: 80%; max-width: 600px; position:
+	relative; } .close-modal { position: absolute; top: 1rem; right: 1.5rem;
+	font-size: 1.5rem; cursor: pointer; color: #aaa; } .close-modal:hover {
+	color: #333; } #event-title { margin-top: 0; color: #333; } #event-details p
+	{ margin: 0.5rem 0; } .modal-actions { margin-top: 1.5rem; text-align:
+	right; } .btn-primary { background-color: #007bff; color: white; padding:
+	0.75rem 1.5rem; border-radius: 4px; text-decoration: none; display:
+	inline-block; font-weight: 600; } @media (max-width: 768px) {
+	.calendar-options { flex-direction: column; align-items: flex-start; }
+	.modal-content { width: 95%; margin: 5% auto; padding: 1rem; } }
+</style>
