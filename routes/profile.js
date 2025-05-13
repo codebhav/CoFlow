@@ -1,6 +1,8 @@
 import { Router } from "express";
 const router = Router();
 import * as userdata from "../data/user.js";
+import * as badgeData from "../data/badge.js";
+import BadgeService from "../services/badgeService.js";
 import middleware from "../middleware.js";
 import Validation from "../helpers.js";
 import { ValidationError, NotFoundError } from "../utils/error-utils.js";
@@ -21,11 +23,15 @@ router
 				if (!user) {
 					throw new NotFoundError("User not found");
 				}
-				const userBadges = await badgeData.getUserBadges(user._id);
-				// Render profile page with user data
+
+				// Get user badges
+				const userBadges = await BadgeService.getUserBadges(user._id);
+
+				// Render profile page with user data and badges
 				return res.render("profile", {
 					title: "Profile",
 					user: user,
+					badges: userBadges,
 					states: [
 						"AL",
 						"AK",
@@ -212,10 +218,16 @@ router
 					};
 				}
 
+				// Get user badges
+				const userBadges = await BadgeService.getUserBadges(
+					updatedUser._id
+				);
+
 				// Redirect to profile page with success message
 				return res.render("profile", {
 					title: "Profile",
 					user: updatedUser,
+					badges: userBadges,
 					success: "Profile updated successfully",
 					states: [
 						"AL",
@@ -275,10 +287,12 @@ router
 
 				// Get user data to re-render form with error
 				const user = await userdata.findUserById(req.session.user.id);
+				const userBadges = await BadgeService.getUserBadges(user._id);
 
 				return res.status(400).render("profile", {
 					title: "Profile",
 					user: user,
+					badges: userBadges,
 					error: error.message || "Error updating profile",
 					states: [
 						"AL",
@@ -386,5 +400,46 @@ router.route("/upload").get(middleware.authenticationMiddleware, (req, res) => {
 			});
 		});
 });
+
+/**
+ * GET /profile/badges - View all user badges
+ */
+router.route("/badges").get(
+	middleware.userRouteMiddleware,
+	asyncHandler(async (req, res) => {
+		try {
+			const userId = req.session.user.id;
+
+			// Get user data
+			const user = await userdata.findUserById(userId);
+			if (!user) {
+				throw new NotFoundError("User not found");
+			}
+
+			// Get all user badges
+			const userBadges = await BadgeService.getUserBadges(userId);
+
+			// Get all available badges for comparison
+			const allBadges = await BadgeService.getAllBadges();
+
+			// Render badges page
+			return res.render("profile-badges", {
+				title: "My Badges",
+				user: user,
+				userBadges: userBadges,
+				allBadges: allBadges,
+				earnedCount: userBadges.length,
+				totalCount: allBadges.length,
+			});
+		} catch (error) {
+			console.error("Error fetching badges:", error);
+
+			return res.status(500).render("error", {
+				title: "Error",
+				message: error.message || "Failed to load badges",
+			});
+		}
+	})
+);
 
 export default router;
