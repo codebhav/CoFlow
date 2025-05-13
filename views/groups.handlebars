@@ -1,79 +1,438 @@
-<form class="searchForm" action="/groups/search" method="POST">
-    <input type="text" name="search" placeholder="Search" class="searchBar" />
-    <button type="submit">Search</button>
-</form>
-
-
-<h2 class="groupHeader">
-    Available Groups
-</h2>
-
-
-    <div class="menu" id="userMenu">
-        <div class="menu-content">
-        <span class="closeButton" id="closeUserMenu">&times;</span>
-
-        <h3>Pending Users</h3>
-        <div id="pendingList">
-        </div>
-
-        <h3>Approved Users</h3>
-        <div id="approvedList">
-        </div>
-
-        <button id="deleteGroupBtn">Delete Group</button>
-      </div>
+<div class="groups-container">
+    <div class="search-section">
+        <form class="search-form" action="/groups/search" method="POST">
+            <div class="search-input-group">
+                <input type="text" name="search" placeholder="Search groups by name, course, description, or tags" value="{{searchQuery}}" class="search-input" />
+                <button type="submit" class="search-button">Search</button>
+            </div>
+            
+            <div class="filter-section">
+                <select name="groupType" class="filter-select">
+                    <option value="">All Group Types</option>
+                    <option value="study-group" {{#if (eq filters.groupType "study-group")}}selected{{/if}}>Study Group</option>
+                    <option value="project-group" {{#if (eq filters.groupType "project-group")}}selected{{/if}}>Project Group</option>
+                </select>
+                
+                <select name="sortBy" class="filter-select">
+                    <option value="meetingDate" {{#if (eq filters.sortBy "meetingDate")}}selected{{/if}}>Sort by Date</option>
+                    <option value="groupName" {{#if (eq filters.sortBy "groupName")}}selected{{/if}}>Sort by Name</option>
+                </select>
+            </div>
+        </form>
     </div>
 
-
-        <div class="menu" id="unprivilegedUserMenu">
-      <div class="menu-content">
-        <span class="closeButton" id="closeUnprivilegedMenu">&times;</span>
-
-        <h3>Approved Users</h3>
-        <div id="unprivilegedApprovedList">
-        </div>
-
-        <button id="leaveGroupBtn">Leave Group</button>
-      </div>
+    <div class="groups-header">
+        <h1>{{#if searchQuery}}Search Results{{else}}Available Groups{{/if}}</h1>
+        <a href="/groups/create" class="create-group-btn">Create New Group</a>
     </div>
 
-
-
-{{#if groups.length}}
-    {{#each groups}}
-        <div class="group">
-            <h3>{{groupName}}</h2>
-            <p>{{location}} | {{course}} | {{startTime}} - {{endTime}} | {{meetingDate}}</p>
-            <p>Members: {{members.length}}/{{capacity}}</p>
-            <p>{{description}}</p>
-            {{#if (eq userRole "admin")}}
-                <form name="userForm" id="{{_id}}" class="userForm" action="/groups/mygroups" method="GET">
-                  <button type="submit">Go to Admin Page</button>
-                </form>
-
-
-            {{else if (eq userRole "member")}}
-                <form id={{_id}} class="userFormUnprivileged">
-                  <button type="button" class="leaveGroupBtn">Leave Group</button>
-                </form>
-
-            {{else if (eq userRole "pending")}}
-              <form id={{_id}} class="cancelReqForm">
-                <button type="button" class="cancelReqBtn">Cancel Request</button>
-              </form>
-
-            {{else if (eq userRole "noval")}}
-              <form name="reqJoin" id={{_id}} class="joinForm" method="POST" action="/reqJoin">
-                <button type="submit" class="joinButton">Request to Join</button>
-              </form>
-            {{/if}}
-
+    {{#if error}}
+        <div class="alert alert-danger">
+            {{error}}
         </div>
-    {{/each}}
-{{else}}
-    <p class="notFound">No groups found</p>
-{{/if}}
+    {{/if}}
 
+    {{#if groups.length}}
+        <div class="groups-grid">
+            {{#each groups}}
+                <div class="group-card">
+                    <div class="group-card-header">
+                        <h3 class="group-name">{{groupName}}</h3>
+                        <span class="group-type badge {{groupType}}">{{groupType}}</span>
+                    </div>
+                    
+                    <div class="group-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Course:</span>
+                            <span class="detail-value">{{course}}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">When:</span>
+                            <span class="detail-value">{{meetingDate}} at {{startTime}}-{{endTime}}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Where:</span>
+                            <span class="detail-value">{{location}}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Capacity:</span>
+                            <span class="detail-value">{{members.length}}/{{capacity}} Members</span>
+                        </div>
+                    </div>
+                    
+                    <div class="group-description">
+                        {{truncate description 100}}
+                    </div>
+                    
+                    <div class="group-card-footer">
+                        <a href="/groups/{{_id}}" class="view-details-btn">View Details</a>
+                        
+                        {{#if (eq userRole "admin")}}
+                            <a href="/groups/{{_id}}/edit" class="edit-group-btn">Edit Group</a>
+                        {{else if (eq userRole "member")}}
+                            <button class="leave-group-btn" data-group-id="{{_id}}">Leave Group</button>
+                        {{else if (eq userRole "pending")}}
+                            <button class="cancel-request-btn" data-group-id="{{_id}}">Cancel Request</button>
+                        {{else}}
+                            {{#if isFull}}
+                                <button class="join-btn full" disabled>Group Full</button>
+                            {{else}}
+                                <button class="join-btn" data-group-id="{{_id}}">Request to Join</button>
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        <div class="no-groups-found">
+            <p>No groups found{{#if searchQuery}} matching your search{{/if}}.</p>
+            <a href="/groups/create" class="create-group-btn">Create a Group</a>
+        </div>
+    {{/if}}
+</div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle join requests
+    document.querySelectorAll('.join-btn:not(.full)').forEach(button => {
+        button.addEventListener('click', async function() {
+            const groupId = this.dataset.groupId;
+            try {
+                const response = await fetch('/groups/reqJoin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ formId: groupId })
+                });
+                
+                if (response.ok) {
+                    this.textContent = 'Request Sent';
+                    this.disabled = true;
+                    this.classList.add('sent');
+                } else {
+                    const data = await response.json();
+                    alert(data.message || 'Failed to send request');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while sending your request');
+            }
+        });
+    });
+    
+    // Handle cancel requests
+    document.querySelectorAll('.cancel-request-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            if (confirm('Are you sure you want to cancel your join request?')) {
+                const groupId = this.dataset.groupId;
+                try {
+                    const response = await fetch('/groups/cancelReq', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ groupId: groupId })
+                    });
+                    
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const data = await response.json();
+                        alert(data.message || 'Failed to cancel request');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while canceling your request');
+                }
+            }
+        });
+    });
+    
+    // Handle leave group
+    document.querySelectorAll('.leave-group-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            if (confirm('Are you sure you want to leave this group?')) {
+                const groupId = this.dataset.groupId;
+                try {
+                    const response = await fetch('/groups/leave', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ groupId: groupId })
+                    });
+                    
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const data = await response.json();
+                        alert(data.message || 'Failed to leave group');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while leaving the group');
+                }
+            }
+        });
+    });
+    
+    // Handle filter changes
+    document.querySelectorAll('.filter-select').forEach(select => {
+        select.addEventListener('change', function() {
+            document.querySelector('.search-form').submit();
+        });
+    });
+});
+</script>
 
+<style>
+.groups-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.search-section {
+    margin-bottom: 2rem;
+}
+
+.search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.search-button {
+    padding: 0.8rem 1.5rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.filter-section {
+    display: flex;
+    gap: 1rem;
+}
+
+.filter-select {
+    padding: 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    flex: 1;
+}
+
+.groups-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.groups-header h1 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.create-group-btn {
+    padding: 0.7rem 1.2rem;
+    background-color: #2ecc71;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.create-group-btn:hover {
+    background-color: #27ae60;
+}
+
+.alert-danger {
+    padding: 1rem;
+    background-color: #f8d7da;
+    color: #721c24;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.group-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.group-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.group-card-header {
+    padding: 1.5rem;
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.group-name {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
+
+.group-type {
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.study-group {
+    background-color: #3498db;
+    color: white;
+}
+
+.project-group {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.group-details {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.detail-label {
+    width: 80px;
+    font-weight: bold;
+    color: #7f8c8d;
+}
+
+.detail-value {
+    flex: 1;
+}
+
+.group-description {
+    padding: 1.5rem;
+    flex-grow: 1;
+    color: #34495e;
+}
+
+.group-card-footer {
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    border-top: 1px solid #eee;
+}
+
+.view-details-btn, .edit-group-btn, .join-btn, .leave-group-btn, .cancel-request-btn {
+    padding: 0.7rem 1rem;
+    border-radius: 4px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.view-details-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.edit-group-btn {
+    background-color: #f39c12;
+    color: white;
+}
+
+.join-btn {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.join-btn.full, .join-btn.sent, .join-btn[disabled] {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+.leave-group-btn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.cancel-request-btn {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.no-groups-found {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.no-groups-found p {
+    margin-bottom: 1.5rem;
+    color: #7f8c8d;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+    .groups-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .groups-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .search-input-group {
+        flex-direction: column;
+    }
+    
+    .filter-section {
+        flex-direction: column;
+    }
+}
+</style>

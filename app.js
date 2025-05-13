@@ -59,33 +59,45 @@ app.engine(
 			getCurrentYear: () => new Date().getFullYear(),
 			eq: (v1, v2) => v1 === v2,
 			add: (v1, v2) => v1 + v2,
-			formatTime: (date) => {
-				if (!date) return "";
-				const d = new Date(date);
-				return d.toLocaleTimeString([], {
-					hour: "2-digit",
-					minute: "2-digit",
-				});
-			},
 			json: (context) => JSON.stringify(context), // Add helper for JSON stringification
 			// Additional safety helpers for output
 			safe: (content) => {
 				if (!content) return "";
 				return new Handlebars.SafeString(content);
 			},
-			truncate: (text, length) => {
+			capitalize: (text) => {
 				if (!text) return "";
-				if (text.length <= length) return text;
-				return text.substring(0, length) + "...";
+				return text.charAt(0).toUpperCase() + text.slice(1);
 			},
 			formatDate: (date) => {
 				if (!date) return "";
 				const d = new Date(date);
+				if (isNaN(d.getTime())) return date;
 				return d.toLocaleDateString();
 			},
-			capitalize: (text) => {
+			formatTime: (time) => {
+				if (!time) return "";
+				// For HH:MM format, convert to 12-hour format
+				const [hours, minutes] = time.split(":");
+				const hour = parseInt(hours);
+				const ampm = hour >= 12 ? "PM" : "AM";
+				const hour12 = hour % 12 || 12;
+				return `${hour12}:${minutes} ${ampm}`;
+			},
+			getCapacityClass: (current, max) => {
+				const ratio = current / max;
+				if (ratio >= 1) return "full";
+				if (ratio >= 0.8) return "almost-full";
+				return "";
+			},
+			join: (arr, separator) => {
+				if (!Array.isArray(arr)) return "";
+				return arr.join(separator);
+			},
+			truncate: (text, length) => {
 				if (!text) return "";
-				return text.charAt(0).toUpperCase() + text.slice(1);
+				if (text.length <= length) return text;
+				return text.substring(0, length) + "...";
 			},
 		},
 	})

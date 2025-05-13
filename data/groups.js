@@ -457,7 +457,6 @@ export const updateGroup = async (groupId, updates, userId) => {
 		throw new Error(`Failed to update group: ${error.message}`);
 	}
 };
-
 /**
  * Check for schedule conflicts for a list of users
  * @param {Array} memberIds - Array of user IDs
@@ -497,21 +496,20 @@ export const checkScheduleConflictsForMembers = async (
 				continue; // Skip if user not found
 			}
 
+			// Get user name for better error messages
+			const userName = user.userName || "User";
+
 			// Combine created and joined groups
-			const userGroups = user.createdGroups.concat(
-				user.joinedGroups || []
-			);
+			const userGroups = [
+				...(user.createdGroups || []),
+				...(user.joinedGroups || []),
+			].filter((id) => id !== currentGroupId); // Skip the current group
 
-			// Skip the current group
-			const filteredGroups = userGroups.filter(
-				(id) => id !== currentGroupId
-			);
-
-			if (filteredGroups.length > 0) {
+			if (userGroups.length > 0) {
 				const existingGroups = await groupsCollection
 					.find({
 						_id: {
-							$in: filteredGroups.map((id) => new ObjectId(id)),
+							$in: userGroups.map((id) => new ObjectId(id)),
 						},
 					})
 					.toArray();
@@ -525,7 +523,10 @@ export const checkScheduleConflictsForMembers = async (
 							group.endTime
 						);
 
-						// Check for overlap
+						// Check for overlap: we have a conflict if either:
+						// 1. New start time is during an existing meeting
+						// 2. New end time is during an existing meeting
+						// 3. New meeting completely encompasses an existing meeting
 						if (
 							(newStartMinutes >= existingStartMinutes &&
 								newStartMinutes < existingEndMinutes) ||
@@ -535,7 +536,7 @@ export const checkScheduleConflictsForMembers = async (
 								newEndMinutes >= existingEndMinutes)
 						) {
 							throw new ConflictError(
-								`Schedule conflict with group "${group.groupName}" for user ${user.userName}`
+								`Schedule conflict with group "${group.groupName}" for user ${userName} (${meetingDate} ${startTime}-${endTime} conflicts with ${group.startTime}-${group.endTime})`
 							);
 						}
 					}

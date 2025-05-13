@@ -201,6 +201,9 @@ router
 /**
  * GET /groups/:id - View a specific group
  */
+/**
+ * GET /groups/:id - View a specific group
+ */
 router.route("/:id").get(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
@@ -280,10 +283,14 @@ router
 					);
 				}
 
+				// Get current date for min attribute
+				const today = new Date().toISOString().split("T")[0];
+
 				// Render edit form
 				return res.render("edit-group", {
 					title: `Edit ${group.groupName}`,
 					group,
+					currentDate: today,
 					locations: [
 						"Edwin A. Stevens",
 						"Library",
@@ -385,28 +392,18 @@ router
 			} catch (error) {
 				console.error("Error updating group:", error);
 
-				if (error instanceof NotFoundError) {
-					return res.status(404).render("error", {
-						title: "Group Not Found",
-						message: "The requested group does not exist",
-					});
-				}
+				const groupId = req.params.id;
 
-				if (error instanceof ValidationError) {
-					return res.status(403).render("error", {
-						title: "Validation Error",
-						message: error.message,
-					});
-				}
+				// Get original group data for re-rendering the form
+				try {
+					const group = await groupData.getGroupById(groupId);
+					const today = new Date().toISOString().split("T")[0];
 
-				if (error instanceof ConflictError) {
-					// Get group data for re-rendering form
-					const group = await groupData.getGroupById(req.params.id);
-
-					return res.status(409).render("edit-group", {
+					return res.status(400).render("edit-group", {
 						title: `Edit ${group.groupName}`,
 						group,
-						error: error.message,
+						currentDate: today,
+						error: error.message || "Failed to update group",
 						locations: [
 							"Edwin A. Stevens",
 							"Library",
@@ -429,12 +426,13 @@ router
 						],
 						groupTypes: ["study-group", "project-group"],
 					});
+				} catch (err) {
+					// If we can't get the group, redirect to groups page
+					return res.status(500).render("error", {
+						title: "Error",
+						message: "An error occurred while updating the group",
+					});
 				}
-
-				return res.status(500).render("error", {
-					title: "Error",
-					message: error.message || "Failed to update group",
-				});
 			}
 		})
 	);
