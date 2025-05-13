@@ -126,8 +126,42 @@ router
 					tags,
 				} = req.body;
 
+				// Log form data for debugging
+				console.log("Form data received:", {
+					groupName,
+					description,
+					capacity,
+					location,
+					course,
+					startTime,
+					endTime,
+					meetingDate,
+					groupType,
+					tags,
+				});
+
+				// Check if required fields are present
+				if (
+					!groupName ||
+					!description ||
+					!capacity ||
+					!location ||
+					!course ||
+					!startTime ||
+					!endTime ||
+					!meetingDate ||
+					!groupType
+				) {
+					throw new ValidationError(
+						"All required fields must be provided"
+					);
+				}
+
 				// Get user ID from session
-				const userId = req.session.user._id;
+				const userId = req.session.user.id || req.session.user._id;
+				if (!userId) {
+					throw new ValidationError("User ID not found in session");
+				}
 
 				// Process tags (comma-separated string to array)
 				let tagArray = [];
@@ -142,7 +176,7 @@ router
 				const newGroup = await groupData.createGroup(
 					groupName,
 					description,
-					capacity,
+					parseInt(capacity),
 					location,
 					course,
 					startTime,
@@ -183,16 +217,7 @@ router
 						"TBD",
 					],
 					groupTypes: ["study-group", "project-group"],
-					groupName: req.body.groupName,
-					description: req.body.description,
-					capacity: req.body.capacity,
-					location: req.body.location,
-					course: req.body.course,
-					startTime: req.body.startTime,
-					endTime: req.body.endTime,
-					meetingDate: req.body.meetingDate,
-					groupType: req.body.groupType,
-					tags: req.body.tags,
+					formData: req.body, // Pass back the form data to pre-fill the form
 				});
 			}
 		})
