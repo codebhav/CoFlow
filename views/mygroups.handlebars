@@ -1,0 +1,167 @@
+<div class="myGroups">
+    <h2 class="myGroupsH2">
+        My Groups
+    </h2>
+
+    <div class="overlay" id="menuOverlay"></div>
+
+    <div class="menu" id="groupMenu">
+        <div class="menuContent">
+            <span class="closeButton" id="closeMenu">&times;</span>
+            <form id="groupForm">
+                <label>Group Name</label>
+                <input type="text" name="groupName" placeholder="CS546 Group11">
+                <label>Group Description</label>
+                <input type="text" name="description" required>
+                <label>Group Capacity</label>
+                <input type="number" name="capacity" placeholder="4">
+                <label>Meeting Location</label>
+                <select name="location" required>
+                    <option value="TBD">TBD</option>                
+                    <option value="Edwin A. Stevens Library">Edwin A. Stevens Library</option>
+                    <option value="Gateway South">Gateway South</option>
+                    <option value="Gateway North">Gateway North</option>
+                    <option value="North Building">North Building</option>
+                    <option value="Babbio">Babbio</option>
+                    <option value="ABS">ABS</option>
+                    <option value="Burchard">Burchard</option>
+                    <option value="Carnegie">Carnegie</option>
+                    <option value="Davidson">Davidson</option>
+                    <option value="Altorfer">Altorfer</option>
+                    <option value="Kidde">Kidde</option>
+                    <option value="McLean">McLean</option>
+                    <option value="Morton">Morton</option>
+                    <option value="Nicoll">Nicoll</option>
+                    <option value="Pierce">Pierce</option>
+                    <option value="Rocco">Rocco</option>
+                </select>
+                <label>Group Course</label>
+                <input type="text" name="course" placeholder="CS546" required>
+                <label>Start Time</label>
+                <input type="text" name="startTime" placeholder="16:30">
+                <label>End Time</label>
+                <input type="text" name="endTime" placeholder="19:45">
+                <label>Meeting Date</label>
+                <input type="text" name="meetingDate" placeholder="YYYY-MM-DD" required>
+                <label>Group Type</label>
+                <select name="groupType" required>
+                    <option value="study-group">Study Group</option>                
+                    <option value="project-group">Project Group</option>
+                </select>
+
+                <button type="submit">Create Group</button>
+            </form>
+        </div>
+    </div>
+
+    <span class="makeGroup">+</span>
+
+    <div class="menu" id="userMenu">
+      <div class="menuContent">
+        <span class="closeButton" id="closeUserMenu">&times;</span>
+
+        <h3>Pending Users</h3>
+        <div id="pendingList">
+        </div>
+
+        <h3>Approved Users</h3>
+        <div id="approvedList">
+        </div>
+
+        <button id="deleteGroupBtn">Delete Group</button>
+      </div>
+    </div>
+
+
+        <div class="menu" id="unprivilegedUserMenu">
+      <div class="menuContent">
+        <span class="closeButton" id="closeUnprivilegedMenu">&times;</span>
+
+        <h3>Approved Users</h3>
+        <div id="unprivilegedApprovedList">
+        </div>
+
+        <button id="leaveGroupBtn">Leave Group</button>
+      </div>
+    </div>
+
+
+
+    {{#if ownedGroups.length}}
+    {{#each ownedGroups}}
+        <div class="group">
+            <h3>{{groupName}}</h2>
+            <span class="colonMenuThing">⋮</span>
+            <p>{{location}} | {{course}} | {{startTime}} - {{endTime}} | {{meetingDate}}</p>
+            <p>Members: {{members.length}}/{{capacity}}</p>
+            <p>{{description}}</p>
+            <form name="userForm" id={{_id}} class="userForm">
+                <button type="submit" class="viewUsers">View Users</button>
+            </form>
+
+        </div>
+    {{/each}}
+    {{else}}
+        <p class="notFound">You do not own any groups</p>
+    {{/if}}
+
+</div>
+
+<div class="myGroups">
+    <h2 class="myGroupsH2">
+        Joined Groups
+    </h2>
+
+
+
+
+
+    {{#if joinedGroups.length}}
+    {{#each joinedGroups}}
+        <div class="group">
+            <h3>{{groupName}}</h2>
+            <p>{{location}} | {{course}} | {{startTime}} - {{endTime}} | {{meetingDate}}</p>
+            <p>Members: {{members.length}}/{{capacity}}</p>
+            <p>{{description}}</p>
+            <form id={{_id}} class="userFormUnprivileged">
+              <button type="button" class="leaveGroupBtn">Leave Group</button>
+            </form>
+        </div>
+    {{/each}}
+    {{else}}
+        <p class="notFound">You have not joined any groups</p>
+    {{/if}}
+
+
+    <h2 class="myGroupsH2">
+        Requested Groups
+    </h2>
+
+    {{#if pendingGroups.length}}
+    {{#each pendingGroups}}
+        <div class="group">
+            <h3>{{groupName}}</h2>
+            <p>{{location}} | {{course}} | {{startTime}} - {{endTime}} | {{meetingDate}}</p>
+            <p>Members: {{members.length}}/{{capacity}}</p>
+            <p>{{description}}</p>
+            <form name="cancelReq" id={{_id}} class="cancelReq">
+                <button type="button" class="cancelReq">Cancel Request</button>
+            </form>
+
+        </div>
+    {{/each}}
+    {{else}}
+        <p class="notFound">You have not requested to join any groups</p>
+    {{/if}}
+
+
+
+
+
+</div>
+
+
+
+
+
+

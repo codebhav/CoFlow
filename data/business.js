@@ -3,7 +3,7 @@ import { groups } from '../config/mongoCollections.js';
 import Validation from '../helpers.js';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcrypt';
-const { formatTime } = require('../helpers.js');//获取标准时间，helpers记得更新
+// import { formatTime } from '../helpers.js';//获取标准时间，helpers记得更新
 
 async function createBuser(userName, company, email, phone, description, hashedPassword, address, city, state, courses, terms, privacy) {
     if (!userName || !company || !email || !phone || !description || !hashedPassword || !address || !city || !state || !courses || terms !== 'on' || privacy !== 'on') {

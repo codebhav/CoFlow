@@ -236,7 +236,140 @@ const exportedMethods = {
     },
     checkUrl(url) {
         return url;
+    },
+
+    getDate() {
+        //Returns the current date in the following format: 2025-04-01T10:15:30Z
+    
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = String(date.getMonth() + 1).padStart(2, '0');
+        let day = String(date.getDate()).padStart(2, '0');
+        let hours = String(date.getUTCHours()).padStart(2, '0');
+        let minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        let seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    
+        let currentDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+    
+        return currentDate;
+    },
+    
+    
+    
+    isAdmin(
+        userGroups,
+        userId
+    ) {
+        //Determines if given user is the admin of a group
+
+
+        let group = userGroups;
+
+        if(!group) throw 'Could not find group'
+
+        let groupMembers = group.members;
+
+
+        if(!groupMembers || groupMembers == []) throw 'Group has no members';
+
+    
+        if((group.members[0] == userId)) {
+            return true;
+        } else {
+            return false;
+        }
+    
+    },
+
+    checkLocation(location){
+        location = this.checkString(location, 'location');
+
+        if (location != 'Edwin A. Stevens' && 
+            location != 'Library' && 
+            location != 'Gateway South' && 
+            location != 'Gateway North' && 
+            location != 'North Building' && 
+            location != 'Babbio' && 
+            location != 'ABS' && 
+            location != 'Burchard' && 
+            location != 'Carnegie' && 
+            location != 'Davidson' && 
+            location != 'Altorfer' && 
+            location != 'Kidde' && 
+            location != 'McLean' && 
+            location != 'Morton' && 
+            location != 'Nicoll' && 
+            location != 'Pierce' && 
+            location != 'Rocco' && 
+            location != 'TBD'){
+            throw 'Invalid Location'
+        }
+
+
+
+
+        return location;
+
+    },
+
+
+    checkCourse(course){
+        course = this.checkString(course, 'course')
+
+        if(/^[A-Za-z]{2,3}[-\s]?\d{3}$/.test(course)){
+            return course;
+        } else {
+            throw 'Course must be in following format: CS-546 or CS 546'
+        }
+    
+    
+    },
+
+
+    checkTime(time){
+        time = this.checkString(time, 'time');
+
+        if(/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)){
+            return time;
+        } else {
+            throw 'Invalid Time'
+        }
+
+    },
+
+    checkTimes(time1, time2){
+        time1 = this.checkString(time1, 'startTime');
+        time2 = this.checkString(time2, 'endTime');
+
+        const convertToHHMM = (time) => {
+            const [hours, minutes] = time.split(':');
+            return parseInt(hours) * 100 + parseInt(minutes);
+        };
+
+    
+        const timeNum1 = convertToHHMM(time1);
+        const timeNum2 = convertToHHMM(time2);
+
+    
+        if (timeNum2 <= timeNum1) {
+            throw 'End time must be later than start time';
+        }
+    
+        return true;
+    },
+
+
+    checkType(groupType){
+        groupType = this.checkString(groupType, 'groupType');
+
+        if(groupType != "study-group" && groupType != "project-group" ){
+            throw 'Invalid group type'
+        } else {
+            return groupType;
+        }
+
     }
+
 };
 
 export default exportedMethods;

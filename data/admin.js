@@ -1,4 +1,4 @@
-import { admin, api } from '../config/mongoCollections.js'
+import { admin } from '../config/mongoCollections.js'
 import Validation from '../helpers.js'
 import { ObjectId } from 'mongodb';
 import { findUserByUsername } from './user.js';
@@ -80,5 +80,5 @@ async function checkAdminLogin(userName, password) {
 
 
 
-export { createAdmin, findAdminById, findAdminByadminName, getAllAdmin, removeAdmin, updateAdmin }
+export { createAdmin, findAdminById, findAdminByadminName, getAllAdmin, removeAdmin }
 

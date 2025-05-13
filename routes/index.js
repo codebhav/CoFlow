@@ -3,6 +3,7 @@ import authRoutes from './auth.js';
 import homeRoutes from './home.js';
 import policyRoutes from './policy.js';
 import adminRoutes from './admin.js';
+import groupRoutes from './groups.js';
 import path from 'path';
 import { static as staticDir } from 'express';
 
@@ -12,6 +13,7 @@ const constructorMethod = (app) => {
     app.use('/admin', adminRoutes);
     app.use('/profile', profileRoutes);
     app.use('/policy', policyRoutes);
+    app.use('/groups', groupRoutes);
     app.use('/public', staticDir('public'));
 
     app.use(/(.*)/, (req, res) => {
