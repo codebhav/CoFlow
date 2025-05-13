@@ -21,7 +21,7 @@ router
 				if (!user) {
 					throw new NotFoundError("User not found");
 				}
-
+				const userBadges = await badgeData.getUserBadges(user._id);
 				// Render profile page with user data
 				return res.render("profile", {
 					title: "Profile",

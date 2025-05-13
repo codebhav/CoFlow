@@ -6,6 +6,8 @@ import * as admindata from "../data/admin.js";
 import * as businessdata from "../data/business.js";
 import middleware from "../middleware.js";
 import Validation from "../helpers.js";
+import * as badgeService from "../services/badgeService.js";
+
 import {
 	ValidationError,
 	NotFoundError,
@@ -186,6 +188,7 @@ router
 					terms,
 					privacy
 				);
+				await badgeService.awardNewUserBadge(newUser._id);
 
 				// Set session data
 				req.session.user = {

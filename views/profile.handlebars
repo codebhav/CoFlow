@@ -53,6 +53,27 @@
             <input type="email" id="email" name="email" value="{{user.email}}" readonly>
             <div class="error-message" id="email-error"></div>
         </div>
+        <div class="user-badges-section">
+            <h2>Badges</h2>
+            {{#if user.badgeIds.length}}
+                <div class="profile-badges-grid">
+                    {{#each userBadges}}
+                        <div class="profile-badge-item">
+                            <img src="{{icon}}" alt="{{name}}" title="{{description}}">
+                            <span class="badge-name">{{name}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+                <div class="view-all-badges-link">
+                    <a href="/badges/my">View All My Badges</a>
+                </div>
+            {{else}}
+                <p class="no-badges-message">You haven't earned any badges yet. Participate in activities to earn badges!</p>
+                <div class="view-all-badges-link">
+                    <a href="/badges">View Available Badges</a>
+                </div>
+            {{/if}}
+        </div>
 
         <h2>Additional Information</h2>
         <div class="form-group">

@@ -421,6 +421,92 @@ async function checkLogin(userName, password) {
 	}
 }
 
+/**
+ * Add a badge to a user
+ * @param {string} userId - User ID
+ * @param {string} badgeId - Badge ID
+ * @returns {Object} Updated user
+ */
+export const addBadgeToUser = async (userId, badgeId) => {
+	try {
+		userId = Validation.checkId(userId, "User ID");
+		badgeId = Validation.checkString(badgeId, "Badge ID");
+
+		const usersCollection = await users();
+
+		// Update user
+		const updateResult = await usersCollection.updateOne(
+			{ _id: new ObjectId(userId) },
+			{ $addToSet: { badgeIds: badgeId } }
+		);
+
+		if (!updateResult.modifiedCount && !updateResult.matchedCount) {
+			throw new Error("Failed to add badge to user");
+		}
+
+		return await findUserById(userId);
+	} catch (error) {
+		console.error("Error adding badge to user:", error);
+		throw new Error(`Failed to add badge to user: ${error.message}`);
+	}
+};
+
+/**
+ * Remove a badge from a user
+ * @param {string} userId - User ID
+ * @param {string} badgeId - Badge ID
+ * @returns {Object} Updated user
+ */
+export const removeBadgeFromUser = async (userId, badgeId) => {
+	try {
+		userId = Validation.checkId(userId, "User ID");
+		badgeId = Validation.checkString(badgeId, "Badge ID");
+
+		const usersCollection = await users();
+
+		// Update user
+		const updateResult = await usersCollection.updateOne(
+			{ _id: new ObjectId(userId) },
+			{ $pull: { badgeIds: badgeId } }
+		);
+
+		if (!updateResult.modifiedCount && !updateResult.matchedCount) {
+			throw new Error("Failed to remove badge from user");
+		}
+
+		return await findUserById(userId);
+	} catch (error) {
+		console.error("Error removing badge from user:", error);
+		throw new Error(`Failed to remove badge from user: ${error.message}`);
+	}
+};
+
+/**
+ * Get badges for user
+ * @param {string} userId - User ID
+ * @returns {Array} Array of badge IDs
+ */
+export const getUserBadgeIds = async (userId) => {
+	try {
+		userId = Validation.checkId(userId, "User ID");
+
+		const usersCollection = await users();
+		const user = await usersCollection.findOne(
+			{ _id: new ObjectId(userId) },
+			{ projection: { badgeIds: 1 } }
+		);
+
+		if (!user) {
+			throw new NotFoundError("User not found");
+		}
+
+		return user.badgeIds || [];
+	} catch (error) {
+		console.error("Error getting user badge IDs:", error);
+		throw new Error(`Failed to get user badge IDs: ${error.message}`);
+	}
+};
+
 export {
 	createUser,
 	findUserByEmail,

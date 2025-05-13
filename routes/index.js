@@ -5,6 +5,7 @@ import policyRoutes from "./policy.js";
 import adminRoutes from "./admin.js";
 import groupRoutes from "./groups.js";
 import uploadRoutes from "./upload.js";
+import badgeRoutes from "./badge.js";
 import { static as staticDir } from "express";
 import { logAuthStatus } from "../middleware/auth-middleware.js";
 
@@ -27,6 +28,7 @@ const configureRoutes = (app) => {
 	app.use("/policy", policyRoutes);
 	app.use("/groups", groupRoutes);
 	app.use("/upload", uploadRoutes);
+	app.use("/badges", badgeRoutes);
 
 	// 404 handler for undefined routes
 	app.use("*", (req, res) => {

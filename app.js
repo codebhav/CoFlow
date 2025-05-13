@@ -7,6 +7,7 @@ import middleware from "./middleware.js";
 import { dbConnection, getMongoClient } from "./config/mongoConnection.js";
 import helmet from "helmet";
 import xss from "xss-clean";
+import * as badgeService from "./services/badgeService.js";
 
 // Generate a random session secret (in production, use an env variable)
 const SESSION_SECRET =
@@ -22,6 +23,14 @@ try {
 } catch (error) {
 	console.error("Failed to connect to MongoDB:", error);
 	process.exit(1); // Exit if we can't connect to the database
+}
+
+// Initialize badges
+try {
+	await badgeService.initializeBadges();
+	console.log("Badges initialized successfully");
+} catch (error) {
+	console.error("Error initializing badges:", error);
 }
 
 // Security middlewares
