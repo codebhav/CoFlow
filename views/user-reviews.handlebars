@@ -89,8 +89,10 @@
         <div class="no-reviews">
             <p>{{targetUser.firstName}} hasn't received any reviews yet.</p>
             
-            {{#if (canReview targetUser._id currentUser.id)}}
-                <p>You can write a review if you've been in a group together.</p>
+            {{#if (eq currentUser.id targetUser._id)}}
+                <p>You can't review yourself, but you can join groups to receive reviews from peers.</p>
+            {{else}}
+                <p>If you've been in a study group with {{targetUser.firstName}}, you can write a review.</p>
                 <a href="/groups/myGroups" class="btn-primary">View My Groups</a>
             {{/if}}
         </div>

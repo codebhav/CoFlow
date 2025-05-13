@@ -108,6 +108,33 @@ app.engine(
 				if (text.length <= length) return text;
 				return text.substring(0, length) + "...";
 			},
+			// Review-specific helpers
+			lte: (v1, v2) => v1 <= v2,
+			range: (start, end) => {
+				const result = [];
+				for (let i = start; i <= end; i++) {
+					result.push(i);
+				}
+				return result;
+			},
+			toString: (value) => String(value),
+			calculateAverage: (reviews) => {
+				if (!reviews || !reviews.length) return "0.0";
+				const sum = reviews.reduce(
+					(total, review) => total + review.rating,
+					0
+				);
+				return (sum / reviews.length).toFixed(1);
+			},
+			isMember: (group, userId) => {
+				if (!group || !group.members || !userId) return false;
+				return group.members.includes(userId);
+			},
+			canReview: (targetId, currentUserId) => {
+				// Don't allow users to review themselves
+				if (!targetId || !currentUserId) return false;
+				return targetId !== currentUserId;
+			},
 		},
 	})
 );

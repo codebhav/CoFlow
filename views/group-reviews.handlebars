@@ -18,7 +18,7 @@
         </div>
     </div>
     
-    {{#if reviews.length}}
+        {{#if reviews.length}}
         <div class="reviews-stats">
             <h2>Review Statistics</h2>
             <div class="stats-grid">
@@ -33,7 +33,7 @@
                 </div>
                 
                 <div class="stat-card">
-                    <span class="stat-value">{{mostActiveUser}}</span>
+                    <span class="stat-value">{{#if mostActiveReviewer}}{{mostActiveReviewer}}{{else}}N/A{{/if}}</span>
                     <span class="stat-label">Most Active Reviewer</span>
                 </div>
             </div>
