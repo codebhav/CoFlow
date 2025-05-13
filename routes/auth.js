@@ -2,121 +2,88 @@ import { Router } from "express";
 const router = Router();
 import bcrypt from "bcrypt";
 import * as userdata from "../data/user.js";
+import * as admindata from "../data/admin.js";
+import * as businessdata from "../data/business.js";
 import middleware from "../middleware.js";
 import Validation from "../helpers.js";
-import * as admindata from "../data/admin.js";
-import { ValidationError } from "../utils/error-utils.js";
+import {
+	ValidationError,
+	NotFoundError,
+	AuthenticationError,
+} from "../utils/error-utils.js";
+import { asyncHandler } from "../utils/error-utils.js";
 
 /**
- * Route for signup page
+ * GET /auth/signup - Render signup form
  */
 router
 	.route("/signup")
-	.get(middleware.signupRouteMiddleware, async (req, res) => {
-		res.render("signup", { title: "Sign Up" });
+	.get(middleware.signupRouteMiddleware, (req, res) => {
+		res.render("signup", {
+			title: "Sign Up",
+			states: [
+				"AL",
+				"AK",
+				"AZ",
+				"AR",
+				"CA",
+				"CO",
+				"CT",
+				"DE",
+				"FL",
+				"GA",
+				"HI",
+				"ID",
+				"IL",
+				"IN",
+				"IA",
+				"KS",
+				"KY",
+				"LA",
+				"ME",
+				"MD",
+				"MA",
+				"MI",
+				"MN",
+				"MS",
+				"MO",
+				"MT",
+				"NE",
+				"NV",
+				"NH",
+				"NJ",
+				"NM",
+				"NY",
+				"NC",
+				"ND",
+				"OH",
+				"OK",
+				"OR",
+				"PA",
+				"RI",
+				"SC",
+				"SD",
+				"TN",
+				"TX",
+				"UT",
+				"VT",
+				"VA",
+				"WA",
+				"WV",
+				"WI",
+				"WY",
+			],
+		});
 	})
-	.post(async (req, res) => {
-		const formData = req.body;
-		console.log("Signup Form Data:", formData);
-
-		let {
-			userName,
-			firstName,
-			lastName,
-			email,
-			password,
-			bio,
-			gender,
-			city,
-			state,
-			dob,
-			courses,
-			education,
-			terms,
-			privacy,
-		} = req.body;
-
-		try {
-			// Check for existing username
-			const existingUsername = await userdata.findUserByUsername(
-				userName
-			);
-			if (existingUsername) {
-				return res.render("signup", {
-					title: "Sign Up",
-					error: "Username already exists.",
-				});
-			}
-
-			// Check for existing email
-			const existingEmail = await userdata.findUserByEmail(email);
-			if (existingEmail) {
-				return res.render("signup", {
-					title: "Sign Up",
-					error: "Email already registered.",
-				});
-			}
-
-			// Validate required fields
-			if (
-				!userName ||
-				!firstName ||
-				!lastName ||
-				!email ||
-				!password ||
-				!terms ||
-				!privacy
-			) {
-				throw new ValidationError(
-					"All required fields must have valid values"
-				);
-			}
-
-			// Validate inputs
-			userName = Validation.checkString(
-				userName,
-				"Username"
-			).toLowerCase();
-			firstName = Validation.checkString(
-				firstName,
-				"First name"
-			).toLowerCase();
-			lastName = Validation.checkString(
-				lastName,
-				"Last name"
-			).toLowerCase();
-			email = Validation.checkEmail(email).toLowerCase();
-			password = Validation.checkPassword(password);
-
-			// Process optional fields
-			courses =
-				courses !== ""
-					? courses.split(",").map((element) => element.trim())
-					: null;
-			bio = bio ? Validation.checkString(bio, "Bio") : "";
-			gender = gender ? Validation.checkGender(gender) : "";
-			city = city ? Validation.checkString(city, "City") : "";
-			state = state ? Validation.checkString(state, "State") : "";
-			dob = dob ? Validation.checkDate(dob) : "";
-			courses = courses
-				? Validation.checkStringArray(courses, "Courses")
-				: [];
-			education = education ? Validation.checkEducation(education) : [];
-
-			if (terms !== "on" || privacy !== "on") {
-				throw new ValidationError(
-					"You must agree to the terms and privacy policy"
-				);
-			}
-
-			// Hash password and create user
-			const hashedPassword = await bcrypt.hash(password, 10);
-			const newUser = await userdata.createUser(
+	.post(
+		asyncHandler(async (req, res) => {
+			// Extract form data
+			let {
 				userName,
 				firstName,
 				lastName,
 				email,
-				hashedPassword,
+				password,
 				bio,
 				gender,
 				city,
@@ -125,11 +92,102 @@ router
 				courses,
 				education,
 				terms,
-				privacy
-			);
+				privacy,
+			} = req.body;
 
-			if (newUser) {
-				// Set session and redirect
+			try {
+				// Validate required fields
+				if (
+					!userName ||
+					!firstName ||
+					!lastName ||
+					!email ||
+					!password
+				) {
+					throw new ValidationError(
+						"All required fields must be provided"
+					);
+				}
+
+				if (!terms || !privacy) {
+					throw new ValidationError(
+						"You must agree to Terms of Use and Privacy Policy"
+					);
+				}
+
+				// Check for existing username or email (case insensitive)
+				const existingUsername = await userdata.findUserByUsername(
+					userName
+				);
+				if (existingUsername) {
+					throw new ValidationError("Username already exists");
+				}
+
+				const existingEmail = await userdata.findUserByEmail(email);
+				if (existingEmail) {
+					throw new ValidationError("Email is already registered");
+				}
+
+				// Validate and sanitize inputs
+				userName = Validation.checkUserName(userName);
+				firstName = Validation.checkString(firstName, "First name");
+				lastName = Validation.checkString(lastName, "Last name");
+				email = Validation.checkEmail(email);
+
+				// Validate password strength
+				Validation.checkPassword(password);
+
+				// Process optional fields
+				bio = bio ? Validation.checkString(bio, "Bio") : "";
+				gender = gender ? Validation.checkGender(gender) : "";
+				city = city ? Validation.checkString(city, "City") : "";
+				state = state ? Validation.checkString(state, "State") : "";
+				dob = dob ? Validation.checkDate(dob) : "";
+
+				// Process courses (comma-separated string to array)
+				if (courses) {
+					courses = courses.split(",").map((course) => course.trim());
+					courses = Validation.checkStringArray(courses, "Courses");
+				} else {
+					courses = [];
+				}
+
+				// Process education JSON data
+				if (typeof education === "string") {
+					try {
+						education = JSON.parse(education);
+					} catch (e) {
+						console.error("Error parsing education data:", e);
+						education = [];
+					}
+				}
+				education = education
+					? Validation.checkEducation(education)
+					: [];
+
+				// Hash password (with appropriate cost factor)
+				const saltRounds = 10;
+				const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+				// Create new user
+				const newUser = await userdata.createUser(
+					userName,
+					firstName,
+					lastName,
+					email,
+					hashedPassword,
+					bio,
+					gender,
+					city,
+					state,
+					dob,
+					courses,
+					education,
+					terms,
+					privacy
+				);
+
+				// Set session data
 				req.session.user = {
 					id: newUser._id,
 					userName: newUser.userName,
@@ -137,109 +195,262 @@ router
 					lastName: newUser.lastName,
 					role: newUser.role,
 				};
+
+				// Redirect to profile page
 				return res.redirect("/profile");
-			} else {
-				throw new Error("Failed to create user");
+			} catch (error) {
+				// For validation errors, retain form data
+				return res.status(400).render("signup", {
+					title: "Sign Up",
+					error: error.message,
+					states: [
+						"AL",
+						"AK",
+						"AZ",
+						"AR",
+						"CA",
+						"CO",
+						"CT",
+						"DE",
+						"FL",
+						"GA",
+						"HI",
+						"ID",
+						"IL",
+						"IN",
+						"IA",
+						"KS",
+						"KY",
+						"LA",
+						"ME",
+						"MD",
+						"MA",
+						"MI",
+						"MN",
+						"MS",
+						"MO",
+						"MT",
+						"NE",
+						"NV",
+						"NH",
+						"NJ",
+						"NM",
+						"NY",
+						"NC",
+						"ND",
+						"OH",
+						"OK",
+						"OR",
+						"PA",
+						"RI",
+						"SC",
+						"SD",
+						"TN",
+						"TX",
+						"UT",
+						"VT",
+						"VA",
+						"WA",
+						"WV",
+						"WI",
+						"WY",
+					],
+					userName,
+					firstName,
+					lastName,
+					email,
+					bio,
+					gender,
+					city,
+					state,
+					dob,
+					courses,
+				});
 			}
-		} catch (error) {
-			console.error("Error during signup:", error);
-			return res.render("signup", {
-				title: "Sign Up",
-				error: error.message || "An error occurred during signup",
-			});
-		}
-	});
+		})
+	);
 
 /**
- * Route for login page
+ * GET /auth/login - Render login form
+ * POST /auth/login - Process login attempt
  */
 router
 	.route("/login")
-	.get(middleware.loginRouteMiddleware, async (req, res) => {
+	.get(middleware.loginRouteMiddleware, (req, res) => {
 		res.render("login", { title: "Login" });
 	})
-	.post(async (req, res) => {
-		const { userName, password } = req.body;
+	.post(
+		asyncHandler(async (req, res) => {
+			const { userName, password } = req.body;
 
-		try {
-			if (!userName || !password) {
-				throw new ValidationError("Username and password are required");
+			try {
+				// Validate inputs
+				if (!userName || !password) {
+					throw new ValidationError(
+						"Username and password are required"
+					);
+				}
+
+				let user = null;
+
+				// Try to find user (first try by username, then by email)
+				try {
+					// First try to find by username
+					user = await userdata.findUserByUsername(userName);
+
+					// If not found, try by email
+					if (!user) {
+						user = await userdata.findUserByEmail(userName);
+					}
+
+					// If still not found, try in admin collection
+					if (!user) {
+						try {
+							user = await admindata.findAdminByadminName(
+								userName
+							);
+						} catch (e) {
+							// Not found in admin collection
+						}
+					}
+
+					// If still not found, try in business collection
+					if (!user) {
+						try {
+							user = await businessdata.findBuserByUsername(
+								userName
+							);
+						} catch (e) {
+							// Not found in business collection
+						}
+					}
+
+					if (!user) {
+						throw new AuthenticationError(
+							"Invalid username or password"
+						);
+					}
+				} catch (e) {
+					throw new AuthenticationError(
+						"Invalid username or password"
+					);
+				}
+
+				// Verify password
+				const passwordMatch = await bcrypt.compare(
+					password,
+					user.hashedPassword
+				);
+				if (!passwordMatch) {
+					throw new AuthenticationError(
+						"Invalid username or password"
+					);
+				}
+
+				// Set session data
+				req.session.user = {
+					id: user._id,
+					userName: user.userName,
+					firstName: user.firstName || "",
+					lastName: user.lastName || "",
+					role: user.role,
+				};
+
+				// Redirect based on role
+				switch (user.role) {
+					case "admin":
+						return res.redirect("/admin/admin-table");
+					case "business":
+						return res.redirect("/profile/business");
+					case "user":
+					default:
+						return res.redirect("/profile");
+				}
+			} catch (error) {
+				return res.status(401).render("login", {
+					title: "Login",
+					error: error.message,
+					userName,
+				});
 			}
-
-			// Validate and authenticate user
-			const validatedUserName = Validation.checkString(
-				userName,
-				"Username"
-			);
-			const validatedPassword = Validation.checkString(
-				password,
-				"Password"
-			);
-
-			const user = await userdata.checkLogin(
-				validatedUserName,
-				validatedPassword
-			);
-
-			if (!user) {
-				throw new ValidationError("Invalid username or password");
-			}
-
-			// Set session
-			req.session.user = {
-				id: user._id,
-				userName: user.userName,
-				firstName: user.firstName || "",
-				lastName: user.lastName || "",
-				role: user.role,
-			};
-
-			// Redirect based on role
-			switch (user.role) {
-				case "user":
-					return res.redirect("/profile");
-				case "business":
-					return res.redirect("/profile/business");
-				case "admin":
-					return res.redirect("/admin/admin-table");
-				default:
-					return res.redirect("/");
-			}
-		} catch (error) {
-			console.error("Error during login:", error);
-			return res.render("login", {
-				title: "Login",
-				error: error.message || "Invalid username or password",
-			});
-		}
-	});
+		})
+	);
 
 /**
- * Route for logout
+ * GET /auth/logout - Log out user by destroying session
+ */
+router.route("/logout").get(middleware.authenticationMiddleware, (req, res) => {
+	// Destroy session
+	req.session.destroy((err) => {
+		if (err) {
+			console.error("Error destroying session:", err);
+		}
+		// Redirect to login page
+		res.redirect("/auth/login");
+	});
+});
+
+/**
+ * GET /auth/business-signup - Render business signup form (to be implemented in Stage 9)
  */
 router
-	.route("/logout")
-	.get(middleware.authenticationMiddleware, async (req, res) => {
-		req.session.destroy(() => {
-			res.redirect("/auth/login");
+	.route("/business-signup")
+	.get(middleware.signupRouteMiddleware, (req, res) => {
+		res.render("business-signup", {
+			title: "Business Sign Up",
+			states: [
+				"AL",
+				"AK",
+				"AZ",
+				"AR",
+				"CA",
+				"CO",
+				"CT",
+				"DE",
+				"FL",
+				"GA",
+				"HI",
+				"ID",
+				"IL",
+				"IN",
+				"IA",
+				"KS",
+				"KY",
+				"LA",
+				"ME",
+				"MD",
+				"MA",
+				"MI",
+				"MN",
+				"MS",
+				"MO",
+				"MT",
+				"NE",
+				"NV",
+				"NH",
+				"NJ",
+				"NM",
+				"NY",
+				"NC",
+				"ND",
+				"OH",
+				"OK",
+				"OR",
+				"PA",
+				"RI",
+				"SC",
+				"SD",
+				"TN",
+				"TX",
+				"UT",
+				"VT",
+				"VA",
+				"WA",
+				"WV",
+				"WI",
+				"WY",
+			],
 		});
 	});
-
-// Commenting out incomplete badge functionality for now
-/*
-router.route('/badges/:username')
-    .get(async (req, res) => {
-        try {
-            const user = await userdata.findUserByUsername(req.params.username);
-            if (!user) {
-                return res.status(404).json({ error: 'User not found' });
-            }
-            // This will be expanded in Stage 5 to return proper badge information
-            res.json({ badges: user.badgeIds || [] });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    });
-*/
 
 export default router;
