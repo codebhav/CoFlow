@@ -233,8 +233,17 @@ export const addGroupToUserSchedule = async (
 	endTime
 ) => {
 	try {
-		const usersCollection = await users();
+		// Add to user's schedule collection
+		await scheduleModel.addEventToSchedule(
+			userId,
+			groupId,
+			meetingDate,
+			startTime,
+			endTime
+		);
 
+		// Also update the user's schedule array
+		const usersCollection = await users();
 		await usersCollection.updateOne(
 			{ _id: new ObjectId(userId) },
 			{
@@ -250,7 +259,33 @@ export const addGroupToUserSchedule = async (
 		);
 	} catch (error) {
 		console.error("Error adding group to user schedule:", error);
-		// Don't throw here to prevent breaking group creation
+		throw error;
+	}
+};
+
+/**
+ * Remove a group from a user's schedule
+ * @param {string} userId - User ID
+ * @param {string} groupId - Group ID
+ */
+export const removeGroupFromUserSchedule = async (userId, groupId) => {
+	try {
+		// Remove from schedule collection
+		await scheduleModel.removeEventFromSchedule(userId, groupId);
+
+		// Also update the user's schedule array
+		const usersCollection = await users();
+		await usersCollection.updateOne(
+			{ _id: new ObjectId(userId) },
+			{
+				$pull: {
+					schedule: { groupId: groupId },
+				},
+			}
+		);
+	} catch (error) {
+		console.error("Error removing group from user schedule:", error);
+		throw error;
 	}
 };
 
@@ -261,7 +296,22 @@ export const addGroupToUserSchedule = async (
  */
 export const getGroupById = async (groupId) => {
 	try {
-		groupId = Validation.checkId(groupId, "Group ID");
+		if (!groupId) {
+			throw new ValidationError("Group ID is required");
+		}
+
+		if (typeof groupId !== "string") {
+			throw new ValidationError("Group ID must be a string");
+		}
+
+		groupId = groupId.trim();
+		if (groupId.length === 0) {
+			throw new ValidationError("Group ID cannot be empty");
+		}
+
+		if (!ObjectId.isValid(groupId)) {
+			throw new ValidationError("Invalid group ID format");
+		}
 
 		const groupsCollection = await groups();
 		const group = await groupsCollection.findOne({
@@ -272,7 +322,24 @@ export const getGroupById = async (groupId) => {
 			throw new NotFoundError("Group not found");
 		}
 
+		// Convert ObjectId to string
 		group._id = group._id.toString();
+
+		// Convert member IDs to strings
+		if (group.members) {
+			group.members = group.members.map((id) => id.toString());
+		}
+		if (group.pendingMembers) {
+			group.pendingMembers = group.pendingMembers.map((id) =>
+				id.toString()
+			);
+		}
+		if (group.rejectedMembers) {
+			group.rejectedMembers = group.rejectedMembers.map((id) =>
+				id.toString()
+			);
+		}
+
 		return group;
 	} catch (error) {
 		if (
@@ -458,6 +525,7 @@ export const updateGroup = async (groupId, updates, userId) => {
 		throw new Error(`Failed to update group: ${error.message}`);
 	}
 };
+
 /**
  * Check for schedule conflicts for a list of users
  * @param {Array} memberIds - Array of user IDs
@@ -746,9 +814,10 @@ export const getAllGroups = async (filters = {}) => {
  * Search for groups by keywords
  * @param {string} query - Search query
  * @param {string} userId - User ID for role assignment
+ * @param {Object} filters - Search filters
  * @returns {Array} Array of matching groups with user roles
  */
-export const searchGroups = async (query, userId) => {
+export const searchGroups = async (query, userId, filters = {}) => {
 	try {
 		if (!query || typeof query !== "string") {
 			query = "";
@@ -756,8 +825,8 @@ export const searchGroups = async (query, userId) => {
 
 		query = query.trim();
 
-		// Get all groups
-		const allGroups = await getAllGroups();
+		// Get all groups with filters
+		const allGroups = await getAllGroups(filters);
 
 		// Filter by query if provided
 		let filteredGroups = allGroups;
@@ -862,36 +931,31 @@ export const getGroupsForMember = async (userId) => {
  */
 export const getGroupDataForMember = async (userId) => {
 	try {
+		// Validate user ID
 		userId = Validation.checkId(userId, "User ID");
 
-		const userGroups = await getGroupsForMember(userId);
+		// Get user's created groups
+		const usersCollection = await users();
+		const user = await usersCollection.findOne({
+			_id: new ObjectId(userId),
+		});
 
-		if (userGroups.length === 0) {
-			return [];
+		if (!user) {
+			throw new NotFoundError("User not found");
 		}
 
+		// Get groups created by user
 		const groupsCollection = await groups();
-		const groupsData = await groupsCollection
+		const createdGroups = await groupsCollection
 			.find({
-				_id: { $in: userGroups.map((id) => new ObjectId(id)) },
+				members: userId,
+				"members.0": userId, // First member is the creator
 			})
 			.toArray();
 
-		// Convert ObjectIds to strings
-		groupsData.forEach((group) => {
-			group._id = group._id.toString();
-		});
-
-		return groupsData;
+		return createdGroups;
 	} catch (error) {
-		if (
-			error instanceof ValidationError ||
-			error instanceof NotFoundError
-		) {
-			throw error;
-		}
-		console.error("Error getting group data for member:", error);
-		throw new Error(`Failed to get group data: ${error.message}`);
+		throw error;
 	}
 };
 
@@ -933,36 +997,21 @@ export const getJoinedGroupsForMember = async (userId) => {
  */
 export const getJoinedGroupDataForMember = async (userId) => {
 	try {
+		// Validate user ID
 		userId = Validation.checkId(userId, "User ID");
 
-		const userGroups = await getJoinedGroupsForMember(userId);
-
-		if (userGroups.length === 0) {
-			return [];
-		}
-
+		// Get groups joined by user (excluding created groups)
 		const groupsCollection = await groups();
-		const groupsData = await groupsCollection
+		const joinedGroups = await groupsCollection
 			.find({
-				_id: { $in: userGroups.map((id) => new ObjectId(id)) },
+				members: userId,
+				"members.0": { $ne: userId }, // Exclude groups where user is creator
 			})
 			.toArray();
 
-		// Convert ObjectIds to strings
-		groupsData.forEach((group) => {
-			group._id = group._id.toString();
-		});
-
-		return groupsData;
+		return joinedGroups;
 	} catch (error) {
-		if (
-			error instanceof ValidationError ||
-			error instanceof NotFoundError
-		) {
-			throw error;
-		}
-		console.error("Error getting joined group data for member:", error);
-		throw new Error(`Failed to get joined group data: ${error.message}`);
+		throw error;
 	}
 };
 
@@ -1004,36 +1053,20 @@ export const getPendingGroupsForMember = async (userId) => {
  */
 export const getPendingGroupDataForMember = async (userId) => {
 	try {
+		// Validate user ID
 		userId = Validation.checkId(userId, "User ID");
 
-		const userGroups = await getPendingGroupsForMember(userId);
-
-		if (userGroups.length === 0) {
-			return [];
-		}
-
+		// Get groups where user has pending requests
 		const groupsCollection = await groups();
-		const groupsData = await groupsCollection
+		const pendingGroups = await groupsCollection
 			.find({
-				_id: { $in: userGroups.map((id) => new ObjectId(id)) },
+				pendingMembers: userId,
 			})
 			.toArray();
 
-		// Convert ObjectIds to strings
-		groupsData.forEach((group) => {
-			group._id = group._id.toString();
-		});
-
-		return groupsData;
+		return pendingGroups;
 	} catch (error) {
-		if (
-			error instanceof ValidationError ||
-			error instanceof NotFoundError
-		) {
-			throw error;
-		}
-		console.error("Error getting pending group data for member:", error);
-		throw new Error(`Failed to get pending group data: ${error.message}`);
+		throw error;
 	}
 };
 
@@ -1465,10 +1498,12 @@ export const leaveGroup = async (userId, groupId) => {
 			{
 				$pull: {
 					joinedGroups: groupId,
-					schedule: { groupId: groupId },
 				},
 			}
 		);
+
+		// Remove from schedule
+		await removeGroupFromUserSchedule(userId, groupId);
 
 		return {
 			success: true,
@@ -1684,4 +1719,5 @@ export default {
 	addGroupToUserSchedule,
 	checkScheduleConflictsForMembers,
 	updateMembersSchedules,
+	removeGroupFromUserSchedule,
 };

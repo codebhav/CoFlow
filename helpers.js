@@ -29,11 +29,17 @@ const exportedMethods = {
 			throw new ValidationError(`${varName} cannot be empty`);
 		}
 
-		if (!ObjectId.isValid(id)) {
-			throw new ValidationError(`${varName} is not a valid ObjectId`);
+		// If it's already a valid ObjectId string, return it
+		if (ObjectId.isValid(id)) {
+			return id;
 		}
 
-		return id;
+		// If it's a regular string ID (e.g., from auth), just validate it's not empty
+		if (id.length > 0) {
+			return id;
+		}
+
+		throw new ValidationError(`${varName} is not a valid ID`);
 	},
 
 	/**

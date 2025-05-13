@@ -1,0 +1,137 @@
+<div class="my-groups-container">
+	<h1>My Groups</h1>
+
+	{{#if error}}
+		<div class="alert alert-danger">
+			{{error}}
+		</div>
+	{{/if}}
+
+	<div class="groups-section">
+		<h2>Groups I Created</h2>
+		{{#if createdGroups.length}}
+			<div class="groups-grid">
+				{{#each createdGroups}}
+					<div class="group-card">
+						<h3>{{groupName}}</h3>
+						<div class="group-details">
+							<p><strong>Course:</strong> {{course}}</p>
+							<p><strong>Date:</strong>
+								{{formatDate meetingDate}}</p>
+							<p><strong>Time:</strong>
+								{{formatTime startTime}}
+								-
+								{{formatTime endTime}}</p>
+							<p><strong>Location:</strong> {{location}}</p>
+							<p><strong>Members:</strong>
+								{{members.length}}/{{capacity}}</p>
+						</div>
+						<div class="group-actions">
+							<a href="/groups/{{_id}}" class="btn-primary">View
+								Details</a>
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		{{else}}
+			<p class="no-groups">You haven't created any groups yet.</p>
+		{{/if}}
+	</div>
+
+	<div class="groups-section">
+		<h2>Groups I Joined</h2>
+		{{#if joinedGroups.length}}
+			<div class="groups-grid">
+				{{#each joinedGroups}}
+					<div class="group-card">
+						<h3>{{groupName}}</h3>
+						<div class="group-details">
+							<p><strong>Course:</strong> {{course}}</p>
+							<p><strong>Date:</strong>
+								{{formatDate meetingDate}}</p>
+							<p><strong>Time:</strong>
+								{{formatTime startTime}}
+								-
+								{{formatTime endTime}}</p>
+							<p><strong>Location:</strong> {{location}}</p>
+							<p><strong>Members:</strong>
+								{{members.length}}/{{capacity}}</p>
+						</div>
+						<div class="group-actions">
+							<a href="/groups/{{_id}}" class="btn-primary">View
+								Details</a>
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		{{else}}
+			<p class="no-groups">You haven't joined any groups yet.</p>
+		{{/if}}
+	</div>
+
+	<div class="groups-section">
+		<h2>Pending Requests</h2>
+		{{#if pendingGroups.length}}
+			<div class="groups-grid">
+				{{#each pendingGroups}}
+					<div class="group-card">
+						<h3>{{groupName}}</h3>
+						<div class="group-details">
+							<p><strong>Course:</strong> {{course}}</p>
+							<p><strong>Date:</strong>
+								{{formatDate meetingDate}}</p>
+							<p><strong>Time:</strong>
+								{{formatTime startTime}}
+								-
+								{{formatTime endTime}}</p>
+							<p><strong>Location:</strong> {{location}}</p>
+							<p><strong>Members:</strong>
+								{{members.length}}/{{capacity}}</p>
+						</div>
+						<div class="group-actions">
+							<a href="/groups/{{_id}}" class="btn-primary">View
+								Details</a>
+							<button
+								onclick="cancelRequest('{{_id}}')"
+								class="btn-secondary"
+							>Cancel Request</button>
+						</div>
+					</div>
+				{{/each}}
+			</div>
+		{{else}}
+			<p class="no-groups">You don't have any pending requests.</p>
+		{{/if}}
+	</div>
+</div>
+
+<style>
+	.my-groups-container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+	.groups-section { margin-bottom: 3rem; } .groups-section h2 { margin-bottom:
+	1.5rem; color: #333; border-bottom: 2px solid #eee; padding-bottom: 0.5rem;
+	} .groups-grid { display: grid; grid-template-columns: repeat(auto-fill,
+	minmax(300px, 1fr)); gap: 1.5rem; } .group-card { background: white;
+	border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0, 0, 0,
+	0.1); transition: transform 0.2s; } .group-card:hover { transform:
+	translateY(-2px); } .group-card h3 { margin: 0 0 1rem; color: #2c3e50; }
+	.group-details { margin-bottom: 1.5rem; } .group-details p { margin: 0.5rem
+	0; color: #666; } .group-actions { display: flex; gap: 1rem; } .btn-primary,
+	.btn-secondary { padding: 0.5rem 1rem; border-radius: 4px; text-decoration:
+	none; cursor: pointer; font-weight: 500; transition: background-color 0.2s;
+	} .btn-primary { background-color: #3498db; color: white; border: none; }
+	.btn-secondary { background-color: #95a5a6; color: white; border: none; }
+	.btn-primary:hover { background-color: #2980b9; } .btn-secondary:hover {
+	background-color: #7f8c8d; } .no-groups { color: #666; font-style: italic; }
+	.alert { padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px; }
+	.alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid
+	#f5c6cb; }
+</style>
+
+<script>
+	async function cancelRequest(groupId) { try { const response = await
+	fetch(`/groups/${groupId}/cancel-request`, { method: 'POST', headers: {
+	'Content-Type': 'application/json' } }); if (!response.ok) { throw new
+	Error('Failed to cancel request'); } // Reload the page to reflect changes
+	window.location.reload(); } catch (error) { console.error('Error canceling
+	request:', error); alert('Failed to cancel request. Please try again.'); } }
+</script>

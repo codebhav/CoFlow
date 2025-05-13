@@ -1,75 +1,77 @@
-<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
-    <link rel="stylesheet" href="/public/css/main.css">
-    {{#if (eq title 'Sign Up')}}
-        <link rel="stylesheet" href="/public/css/signup.css">
-    {{/if}}
-    {{#if (eq title 'Login')}}
-        <link rel="stylesheet" href="/public/css/signin.css">
-    {{/if}}
-    {{#if (eq title 'Profile')}}
-        <link rel="stylesheet" href="/public/css/profile.css">
-    {{/if}}
-    {{#if (eq title 'Admin')}}
-        <link rel="stylesheet" href="/public/css/admin.css">
-    {{/if}}
-</head>
-<body>
-    <header>
-        <a href="/" style="text-decoration: none;color: inherit;"><h1>CoFlow</h1></a>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                
-                {{#if user}}
-                    {{#if (eq user.role "user")}}
-                    <li><a href="/profile">Profile</a></li>
-                    {{/if}}
-                    {{#if (eq user.role "business")}}
-                    <li><a href="/profile/business">Profile</a></li>
-                    {{/if}}
-                    {{#if (eq user.role "admin")}}
-                    <li><a href="/admin/admin-table">Admin Table</a></li>
-                    {{/if}}
-                    <li><a href="/auth/logout">Logout</a></li>
-                {{else}}
-                    <li><a href="/auth/signup">Sign Up</a></li>
-                <li><a href="/auth/login">Login</a></li>
-                {{/if}}
-            </ul>
-        </nav>
-    </header>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{{title}}</title>
+		<link rel="stylesheet" href="/public/css/main.css" />
+		{{#if (eq title "Sign Up")}}
+			<link rel="stylesheet" href="/public/css/signup.css" />
+		{{/if}}
+		{{#if (eq title "Login")}}
+			<link rel="stylesheet" href="/public/css/signin.css" />
+		{{/if}}
+		{{#if (eq title "Profile")}}
+			<link rel="stylesheet" href="/public/css/profile.css" />
+		{{/if}}
+		{{#if (eq title "Admin")}}
+			<link rel="stylesheet" href="/public/css/admin.css" />
+		{{/if}}
+	</head>
+	<body>
+		<header>
+			<a href="/" style="text-decoration: none;color: inherit;"><h1
+				>CoFlow</h1></a>
+			<nav>
+				<ul>
+					<li><a href="/">Home</a></li>
 
-    <main>
-        {{{body}}}
-    </main>
-        
+					{{#if user}}
+						{{#if (eq user.role "user")}}
+							<li><a href="/profile">Profile</a></li>
+							<li><a href="/schedule">Schedule</a></li>
+						{{/if}}
+						{{#if (eq user.role "business")}}
+							<li><a href="/profile/business">Profile</a></li>
+						{{/if}}
+						{{#if (eq user.role "admin")}}
+							<li><a href="/admin/admin-table">Admin Table</a></li>
+						{{/if}}
+						<li><a href="/auth/logout">Logout</a></li>
+					{{else}}
+						<li><a href="/auth/signup">Sign Up</a></li>
+						<li><a href="/auth/login">Login</a></li>
+					{{/if}}
+				</ul>
+			</nav>
+		</header>
 
-    <footer>
-        <p>&copy; {{getCurrentYear}} CoFlow. All rights reserved.</p>
-    <div class="footer-links">
-      <a href="/team/about">About</a>
-      <a href="/team/contact">Contact</a>
-      <a href="/policy/privacy">Privacy Policy</a>
-      <a href="/policy/term">Terms of Use</a>
-    </div>
-    </footer>
-    <script src="/public/js/main.js"></script>
-    <script src="/public/js/createGroup.js"></script>
-    <script src="/public/js/groups.js"></script>
-     {{#if (eq title 'Sign Up')}}
-       <script src="/public/js/signup.js"></script>
-    {{/if}}
-    {{#if (eq title 'Login')}}
-        <script src="/public/js/login.js"></script>
-    {{/if}}
-    {{#if (eq title 'Profile')}}
-        <script src="/public/js/profile.js"></script>
-        <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
-    {{/if}}
-</body>
+		<main>
+			{{{body}}}
+		</main>
+
+		<footer>
+			<p>&copy; {{getCurrentYear}} CoFlow. All rights reserved.</p>
+			<div class="footer-links">
+				<a href="/team/about">About</a>
+				<a href="/team/contact">Contact</a>
+				<a href="/policy/privacy">Privacy Policy</a>
+				<a href="/policy/term">Terms of Use</a>
+			</div>
+		</footer>
+		<script src="/public/js/main.js"></script>
+		<script src="/public/js/createGroup.js"></script>
+		<script src="/public/js/groups.js"></script>
+		{{#if (eq title "Sign Up")}}
+			<script src="/public/js/signup.js"></script>
+		{{/if}}
+		{{#if (eq title "Login")}}
+			<script src="/public/js/login.js"></script>
+		{{/if}}
+		{{#if (eq title "Profile")}}
+			<script src="/public/js/profile.js"></script>
+			<script
+				src="https://upload-widget.cloudinary.com/global/all.js"
+			></script>
+		{{/if}}
+	</body>
 </html>

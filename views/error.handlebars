@@ -1,3 +1,45 @@
+<div class="error-container">
+	<h1>{{title}}</h1>
+	<div class="error-message">
+		<p>{{message}}</p>
+		{{#if error}}
+			{{#if (eq error.status 404)}}
+				<p>The page you are looking for might have been removed, had its
+					name changed, or is temporarily unavailable.</p>
+			{{/if}}
+			{{#if (eq NODE_ENV "development")}}
+				<div class="error-details">
+					<h2>Error Details</h2>
+					<p>Status: {{error.status}}</p>
+					{{#if error.message}}
+						<p>Message: {{error.message}}</p>
+					{{/if}}
+					{{#if error.stack}}
+						<pre class="error-stack">{{error.stack}}</pre>
+					{{/if}}
+				</div>
+			{{/if}}
+		{{/if}}
+	</div>
+	<div class="error-actions">
+		<a href="/" class="btn-primary">Go to Homepage</a>
+		<button onclick="window.history.back()" class="btn-secondary">Go Back</button>
+	</div>
+</div>
 
-    <h2>{{title}}</h2>
-    <p>{{message}}</p>
+<style>
+	.error-container { max-width: 800px; margin: 2rem auto; padding: 2rem;
+	text-align: center; background-color: #fff; border-radius: 8px; box-shadow:
+	0 2px 4px rgba(0, 0, 0, 0.1); } .error-message { margin: 2rem 0; color:
+	#666; } .error-details { margin-top: 2rem; padding: 1rem; background-color:
+	#f8f9fa; border-radius: 4px; text-align: left; } .error-stack { margin-top:
+	1rem; padding: 1rem; background-color: #f1f1f1; border-radius: 4px;
+	overflow-x: auto; font-size: 0.9rem; white-space: pre-wrap; } .error-actions
+	{ margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; }
+	.btn-primary, .btn-secondary { padding: 0.8rem 1.5rem; border-radius: 4px;
+	text-decoration: none; cursor: pointer; font-weight: 500; transition:
+	background-color 0.2s; } .btn-primary { background-color: #3498db; color:
+	white; border: none; } .btn-secondary { background-color: #95a5a6; color:
+	white; border: none; } .btn-primary:hover { background-color: #2980b9; }
+	.btn-secondary:hover { background-color: #7f8c8d; }
+</style>

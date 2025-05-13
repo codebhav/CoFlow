@@ -47,23 +47,28 @@ router.route("/search").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			// Get search query
-			const { search } = req.body;
-
-			if (!search || typeof search !== "string") {
-				throw new ValidationError("Invalid search query");
-			}
+			// Get search query and filters
+			const { search = "", groupType, sortBy } = req.body;
 
 			// Get user ID from session
-			const userId = req.session.user._id;
+			const userId = req.session.user.id;
 
-			// Search for groups with user role
-			let groups = await groupData.searchGroups(search, userId);
+			// Create filters object
+			const filters = {
+				groupType: groupType || undefined,
+				sortBy: sortBy || "meetingDate",
+				showPast: false,
+				showFull: false,
+			};
+
+			// Search for groups with user role and filters
+			let groups = await groupData.searchGroups(search, userId, filters);
 
 			return res.render("groups", {
 				title: "Search Results",
 				groups,
 				searchQuery: search,
+				filters,
 			});
 		} catch (error) {
 			console.error("Error searching groups:", error);
@@ -71,6 +76,7 @@ router.route("/search").post(
 				title: "Search Results",
 				groups: [],
 				error: error.message || "Failed to search groups",
+				filters: req.body,
 			});
 		}
 	})
@@ -126,20 +132,6 @@ router
 					tags,
 				} = req.body;
 
-				// Log form data for debugging
-				console.log("Form data received:", {
-					groupName,
-					description,
-					capacity,
-					location,
-					course,
-					startTime,
-					endTime,
-					meetingDate,
-					groupType,
-					tags,
-				});
-
 				// Check if required fields are present
 				if (
 					!groupName ||
@@ -157,8 +149,8 @@ router
 					);
 				}
 
-				// Get user ID from session
-				const userId = req.session.user.id || req.session.user._id;
+				// Get user ID from session and ensure it's a string
+				const userId = req.session.user.id.toString();
 				if (!userId) {
 					throw new ValidationError("User ID not found in session");
 				}
@@ -465,102 +457,42 @@ router
 /**
  * GET /groups/myGroups - View user's groups
  */
-router
-	.route("/myGroups")
-	.get(
-		ensureAuthenticated,
-		asyncHandler(async (req, res) => {
-			try {
-				const userId = req.session.user._id;
-
-				// Get groups created by user
-				const ownedGroups = await groupData.getGroupDataForMember(
-					userId
-				);
-
-				// Get groups joined by user
-				const joinedGroups =
-					await groupData.getJoinedGroupDataForMember(userId);
-
-				// Get groups where user has pending requests
-				const pendingGroups =
-					await groupData.getPendingGroupDataForMember(userId);
-
-				// Render my groups page
-				return res.render("mygroups", {
-					title: "My Groups",
-					ownedGroups,
-					joinedGroups,
-					pendingGroups,
-				});
-			} catch (error) {
-				console.error("Error getting my groups:", error);
-				return res.status(500).render("error", {
-					title: "Error",
-					message: error.message || "Failed to load your groups",
-				});
+router.route("/myGroups").get(
+	ensureAuthenticated,
+	asyncHandler(async (req, res) => {
+		try {
+			// Get user ID from session and ensure it's a string
+			const userId = req.session.user.id;
+			if (!userId) {
+				throw new ValidationError("User ID not found in session");
 			}
-		})
-	)
-	.post(
-		ensureAuthenticated,
-		asyncHandler(async (req, res) => {
-			try {
-				const userId = req.session.user._id;
 
-				// Extract form data for new group
-				const {
-					groupName,
-					description,
-					capacity,
-					location,
-					course,
-					startTime,
-					endTime,
-					meetingDate,
-					groupType,
-				} = req.body;
+			// Get user's groups
+			const [createdGroups, joinedGroups, pendingGroups] =
+				await Promise.all([
+					groupData.getGroupDataForMember(userId),
+					groupData.getJoinedGroupDataForMember(userId),
+					groupData.getPendingGroupDataForMember(userId),
+				]);
 
-				// Create new group
-				await groupData.createGroupHelper(
-					groupName,
-					description,
-					parseInt(capacity),
-					location,
-					course,
-					startTime,
-					endTime,
-					meetingDate,
-					groupType,
-					userId,
-					[] // Empty tags for now
-				);
-
-				// Redirect back to my groups
-				return res.redirect("/groups/myGroups");
-			} catch (error) {
-				console.error("Error creating group:", error);
-
-				// Get user's groups for re-rendering page
-				const userId = req.session.user._id;
-				const ownedGroups = await groupData.getGroupDataForMember(
-					userId
-				);
-				const joinedGroups =
-					await groupData.getJoinedGroupDataForMember(userId);
-				const pendingGroups =
-					await groupData.getPendingGroupDataForMember(userId);
-
-				return res.status(400).render("mygroups", {
-					title: "My Groups",
-					ownedGroups,
-					joinedGroups,
-					pendingGroups,
-					error: error.message || "Failed to create group",
-				});
-			}
-		})
-	);
+			return res.render("my-groups", {
+				title: "My Groups",
+				createdGroups: createdGroups || [],
+				joinedGroups: joinedGroups || [],
+				pendingGroups: pendingGroups || [],
+			});
+		} catch (error) {
+			console.error("Error getting group details:", error);
+			return res.status(400).render("my-groups", {
+				title: "My Groups",
+				error: error.message || "Failed to load groups",
+				createdGroups: [],
+				joinedGroups: [],
+				pendingGroups: [],
+			});
+		}
+	})
+);
 
 /**
  * POST /groups/reqJoin - Request to join a group
@@ -569,7 +501,7 @@ router.route("/reqJoin").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user._id;
+			const userId = req.session.user.id;
 			const { formId } = req.body;
 
 			if (!formId) {

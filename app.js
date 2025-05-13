@@ -8,58 +8,98 @@ import { dbConnection, getMongoClient } from "./config/mongoConnection.js";
 import helmet from "helmet";
 import xss from "xss-clean";
 import BadgeService from "./services/badgeService.js";
+import dotenv from "dotenv";
 
-// Generate a random session secret (in production, use an env variable)
-const SESSION_SECRET =
-	process.env.SESSION_SECRET ||
-	Math.random().toString(36).substring(2) +
-		Math.random().toString(36).substring(2);
+// Load environment variables
+dotenv.config();
 
-// Database connection setup
+// Ensure required environment variables are set
+const requiredEnvVars = ["SESSION_SECRET", "MONGODB_URI"];
+for (const envVar of requiredEnvVars) {
+	if (!process.env[envVar]) {
+		console.error(`Missing required environment variable: ${envVar}`);
+		process.exit(1);
+	}
+}
+
+// Use environment variable for session secret
+const SESSION_SECRET = process.env.SESSION_SECRET;
+
+// Database connection setup with proper error handling
+let db;
 try {
 	const client = await getMongoClient();
-	const db = await dbConnection();
+	db = await dbConnection();
 	console.log("Connected to MongoDB successfully");
 } catch (error) {
 	console.error("Failed to connect to MongoDB:", error);
-	process.exit(1); // Exit if we can't connect to the database
+	process.exit(1);
 }
 
-// Initialize badges
+// Initialize badges with proper error handling
 try {
 	await BadgeService.initializeDefaultBadges();
 	console.log("Badges initialized successfully");
 } catch (error) {
 	console.error("Error initializing badges:", error);
+	// Don't exit here, as this is not critical for app function
 }
 
-// Security middlewares
-app.use(helmet({ contentSecurityPolicy: false })); // Disable CSP for development
-app.use(xss()); // Prevent XSS attacks
+// Security middlewares with proper CSP configuration
+app.use(
+	helmet({
+		contentSecurityPolicy: {
+			directives: {
+				defaultSrc: ["'self'"],
+				scriptSrc: [
+					"'self'",
+					"'unsafe-inline'",
+					"'unsafe-eval'",
+					"https://cdn.jsdelivr.net",
+				],
+				styleSrc: [
+					"'self'",
+					"'unsafe-inline'",
+					"https:",
+					"https://cdn.jsdelivr.net",
+				],
+				imgSrc: ["'self'", "data:", "https:"],
+				connectSrc: ["'self'"],
+				fontSrc: ["'self'", "https:"],
+				objectSrc: ["'none'"],
+				mediaSrc: ["'self'"],
+				frameSrc: ["'self'"],
+			},
+		},
+	})
+);
+app.use(xss());
 
 // Static file serving
 app.use("/public", express.static("public"));
+app.use("/node_modules", express.static("node_modules"));
 
 // Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
+// Session configuration with secure settings
 app.use(
 	session({
 		name: "CoFlow",
 		secret: SESSION_SECRET,
 		resave: false,
-		saveUninitialized: false, // Changed to false for GDPR compliance
+		saveUninitialized: false,
 		cookie: {
-			httpOnly: true, // Helps protect against XSS
-			secure: process.env.NODE_ENV === "production", // HTTPS only in production
-			maxAge: 1000 * 60 * 60 * 24, // 1 day
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			maxAge: 1000 * 60 * 60 * 24,
+			sameSite: "strict",
 		},
 	})
 );
 
-// Handlebars setup
+// Handlebars setup with fixed helper functions
 app.engine(
 	"handlebars",
 	engine({
@@ -68,11 +108,10 @@ app.engine(
 			getCurrentYear: () => new Date().getFullYear(),
 			eq: (v1, v2) => v1 === v2,
 			add: (v1, v2) => v1 + v2,
-			json: (context) => JSON.stringify(context), // Add helper for JSON stringification
-			// Additional safety helpers for output
+			json: (context) => JSON.stringify(context),
 			safe: (content) => {
 				if (!content) return "";
-				return new Handlebars.SafeString(content);
+				return content; // Let Handlebars handle escaping
 			},
 			capitalize: (text) => {
 				if (!text) return "";
@@ -86,12 +125,23 @@ app.engine(
 			},
 			formatTime: (time) => {
 				if (!time) return "";
-				// For HH:MM format, convert to 12-hour format
 				const [hours, minutes] = time.split(":");
 				const hour = parseInt(hours);
 				const ampm = hour >= 12 ? "PM" : "AM";
 				const hour12 = hour % 12 || 12;
 				return `${hour12}:${minutes} ${ampm}`;
+			},
+			groupByDate: (events) => {
+				if (!Array.isArray(events)) return {};
+				const grouped = {};
+				events.forEach((event) => {
+					if (!event.meetingDate) return;
+					if (!grouped[event.meetingDate]) {
+						grouped[event.meetingDate] = [];
+					}
+					grouped[event.meetingDate].push(event);
+				});
+				return grouped;
 			},
 			getCapacityClass: (current, max) => {
 				const ratio = current / max;
@@ -108,7 +158,6 @@ app.engine(
 				if (text.length <= length) return text;
 				return text.substring(0, length) + "...";
 			},
-			// Review-specific helpers
 			lte: (v1, v2) => v1 <= v2,
 			range: (start, end) => {
 				const result = [];
@@ -131,7 +180,6 @@ app.engine(
 				return group.members.includes(userId);
 			},
 			canReview: (targetId, currentUserId) => {
-				// Don't allow users to review themselves
 				if (!targetId || !currentUserId) return false;
 				return targetId !== currentUserId;
 			},
@@ -147,13 +195,39 @@ app.use(middleware.xssProtectionMiddleware);
 // Configure routes
 configRoutes(app);
 
+// 404 handler
+app.use((req, res, next) => {
+	res.status(404).render("error", {
+		title: "404 Not Found",
+		message: "The page you are looking for does not exist.",
+		error: {
+			status: 404,
+			stack:
+				process.env.NODE_ENV === "development"
+					? "Page not found"
+					: undefined,
+		},
+	});
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
 	console.error("Global error handler caught:", err);
-	res.status(500).render("error", {
-		title: "Error",
-		message: "An unexpected error occurred",
-		error: process.env.NODE_ENV === "development" ? err.message : undefined,
+	const statusCode = err.status || 500;
+	res.status(statusCode).render("error", {
+		title: `Error ${statusCode}`,
+		message:
+			statusCode === 500
+				? "An unexpected error occurred"
+				: err.message || "Something went wrong",
+		error:
+			process.env.NODE_ENV === "development"
+				? {
+						status: statusCode,
+						message: err.message,
+						stack: err.stack,
+				  }
+				: undefined,
 	});
 });
 
@@ -161,4 +235,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 	console.log(`Server running on http://localhost:${PORT}`);
+	console.log(`Environment: ${process.env.NODE_ENV}`);
 });
