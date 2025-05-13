@@ -7,7 +7,7 @@ import middleware from "./middleware.js";
 import { dbConnection, getMongoClient } from "./config/mongoConnection.js";
 import helmet from "helmet";
 import xss from "xss-clean";
-import * as badgeService from "./services/badgeService.js";
+import BadgeService from "./services/badgeService.js";
 
 // Generate a random session secret (in production, use an env variable)
 const SESSION_SECRET =
@@ -27,7 +27,7 @@ try {
 
 // Initialize badges
 try {
-	await badgeService.initializeBadges();
+	await BadgeService.initializeDefaultBadges();
 	console.log("Badges initialized successfully");
 } catch (error) {
 	console.error("Error initializing badges:", error);

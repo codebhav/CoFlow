@@ -1,4 +1,6 @@
 import * as badgeData from "../data/badge.js";
+import * as userData from "../data/user.js";
+import { ValidationError } from "../utils/error-utils.js";
 
 /**
  * Service for badge-related operations
@@ -12,7 +14,8 @@ class BadgeService {
 	 */
 	static async checkAndAwardBadges(user, activityType) {
 		try {
-			if (!user || !activityType) {
+			if (!user || !user._id || !activityType) {
+				console.log("Invalid user or activity type");
 				return [];
 			}
 
@@ -31,6 +34,11 @@ class BadgeService {
 	 */
 	static async getUserBadges(userId) {
 		try {
+			if (!userId) {
+				console.log("User ID is required");
+				return [];
+			}
+
 			return await badgeData.getUserBadges(userId);
 		} catch (error) {
 			console.error("Error getting user badges:", error);
@@ -46,10 +54,36 @@ class BadgeService {
 	 */
 	static async awardBadge(userId, badgeId) {
 		try {
+			if (!userId || !badgeId) {
+				throw new ValidationError("User ID and Badge ID are required");
+			}
+
 			return await badgeData.awardBadge(userId, badgeId);
 		} catch (error) {
 			console.error("Error awarding badge:", error);
 			return { awarded: false, message: error.message };
+		}
+	}
+
+	/**
+	 * Award New Explorer badge to a new user
+	 * @param {string} userId - User ID to award badge to
+	 * @returns {Promise<Object>} Result of badge award
+	 */
+	static async awardNewUserBadge(userId) {
+		try {
+			if (!userId) {
+				throw new ValidationError("User ID is required");
+			}
+
+			// Award the "newuser" badge
+			return await badgeData.awardBadge(userId, "newuser");
+		} catch (error) {
+			console.error("Error awarding new user badge:", error);
+			return {
+				awarded: false,
+				message: `Failed to award new user badge: ${error.message}`,
+			};
 		}
 	}
 
@@ -67,14 +101,17 @@ class BadgeService {
 	}
 
 	/**
-	 * Initialize default badges
+	 * Initialize default badges in the database
 	 * @returns {Promise<void>}
 	 */
 	static async initializeDefaultBadges() {
 		try {
+			console.log("Initializing default badges...");
 			await badgeData.initializeDefaultBadges();
+			console.log("Default badges initialized successfully");
 		} catch (error) {
 			console.error("Error initializing default badges:", error);
+			// Don't throw to avoid crashing the application startup
 		}
 	}
 }
