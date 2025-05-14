@@ -216,9 +216,45 @@ router
 	);
 
 /**
- * GET /groups/:id - View a specific group
+ * GET /groups/myGroups - View user's groups
  */
-/**
+router.route("/myGroups").get(
+	ensureAuthenticated,
+	asyncHandler(async (req, res) => {
+		try {
+			// Get user ID from session and ensure it's a string
+			const userId = req.session.user.id;
+			if (!userId) {
+				throw new ValidationError("User ID not found in session");
+			}
+
+			// Get user's groups
+			const [createdGroups, joinedGroups, pendingGroups] =
+				await Promise.all([
+					groupData.getGroupDataForMember(userId),
+					groupData.getJoinedGroupDataForMember(userId),
+					groupData.getPendingGroupDataForMember(userId),
+				]);
+
+			return res.render("my-groups", {
+				title: "My Groups",
+				createdGroups: createdGroups || [],
+				joinedGroups: joinedGroups || [],
+				pendingGroups: pendingGroups || [],
+			});
+		} catch (error) {
+			console.error("Error getting group details:", error);
+			return res.status(400).render("my-groups", {
+				title: "My Groups",
+				error: error.message || "Failed to load groups",
+				createdGroups: [],
+				joinedGroups: [],
+				pendingGroups: [],
+			});
+		}
+	})
+);
+/*
  * GET /groups/:id - View a specific group
  */
 router.route("/:id").get(
@@ -453,46 +489,6 @@ router
 			}
 		})
 	);
-
-/**
- * GET /groups/myGroups - View user's groups
- */
-router.route("/myGroups").get(
-	ensureAuthenticated,
-	asyncHandler(async (req, res) => {
-		try {
-			// Get user ID from session and ensure it's a string
-			const userId = req.session.user.id;
-			if (!userId) {
-				throw new ValidationError("User ID not found in session");
-			}
-
-			// Get user's groups
-			const [createdGroups, joinedGroups, pendingGroups] =
-				await Promise.all([
-					groupData.getGroupDataForMember(userId),
-					groupData.getJoinedGroupDataForMember(userId),
-					groupData.getPendingGroupDataForMember(userId),
-				]);
-
-			return res.render("my-groups", {
-				title: "My Groups",
-				createdGroups: createdGroups || [],
-				joinedGroups: joinedGroups || [],
-				pendingGroups: pendingGroups || [],
-			});
-		} catch (error) {
-			console.error("Error getting group details:", error);
-			return res.status(400).render("my-groups", {
-				title: "My Groups",
-				error: error.message || "Failed to load groups",
-				createdGroups: [],
-				joinedGroups: [],
-				pendingGroups: [],
-			});
-		}
-	})
-);
 
 /**
  * POST /groups/reqJoin - Request to join a group
