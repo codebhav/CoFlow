@@ -1,6 +1,5 @@
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
-import { users } from "../config/mongoCollections.js";
-import { groups } from "../config/mongoCollections.js";
+import { users, groups, admin } from "../config/mongoCollections.js";
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 
@@ -12,9 +11,11 @@ const seedData = async () => {
 		// Create collections
 		const usersCollection = await users();
 		const groupsCollection = await groups();
+		const adminCollection = await admin();
 
-		// Create test users
 		const saltRounds = 10;
+
+		// Sample users
 		const testUsers = [
 			{
 				userName: "john_doe",
@@ -60,14 +61,14 @@ const seedData = async () => {
 			},
 		];
 
-		// Insert users and store their IDs
+		// Insert users and keep track of IDs
 		const userIds = {};
 		for (const user of testUsers) {
-			const insertInfo = await usersCollection.insertOne(user);
-			userIds[user.userName] = insertInfo.insertedId.toString();
+			const { insertedId } = await usersCollection.insertOne(user);
+			userIds[user.userName] = insertedId.toString();
 		}
 
-		// Create test groups
+		// Sample groups
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 		const tomorrowStr = tomorrow.toISOString().split("T")[0];
@@ -135,37 +136,45 @@ const seedData = async () => {
 			},
 		];
 
-		// Insert groups
+		// Insert groups and update user group references
 		for (const group of testGroups) {
-			const insertInfo = await groupsCollection.insertOne(group);
-			const groupId = insertInfo.insertedId.toString();
+			const { insertedId } = await groupsCollection.insertOne(group);
+			const groupId = insertedId.toString();
 
-			// Update the creator's createdGroups array
+			// Update creator's createdGroups
 			await usersCollection.updateOne(
 				{ _id: new ObjectId(group.members[0]) },
 				{ $push: { createdGroups: groupId } }
 			);
 
-			// Update pending members' pendingGroups array
-			for (const pendingMemberId of group.pendingMembers) {
+			// Update pending members' pendingGroups
+			for (const pendingId of group.pendingMembers) {
 				await usersCollection.updateOne(
-					{ _id: new ObjectId(pendingMemberId) },
+					{ _id: new ObjectId(pendingId) },
 					{ $push: { pendingGroups: groupId } }
 				);
 			}
 		}
 
+		// Seed admin user
+		const adminData = {
+			userName: "Admin_admin",
+			hashedPassword: await bcrypt.hash("12345Abcde@", saltRounds),
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		};
+		const { insertedId: adminId } = await adminCollection.insertOne(
+			adminData
+		);
+		if (!adminId) throw "Error in creating seed admin";
+
 		console.log("Database seeded successfully!");
 		console.log("Test User Credentials:");
-		console.log(
-			"1. Username: john_doe@stevens.edu, Password: Password123!"
-		);
-		console.log(
-			"2. Username: jane_smith@stevens.edu, Password: Password123!"
-		);
-		console.log(
-			"3. Username: bob_wilson@stevens.edu, Password: Password123!"
-		);
+		console.log("1. john_doe@stevens.edu / Password: Password123!");
+		console.log("2. jane_smith@stevens.edu / Password: Password123!");
+		console.log("3. bob_wilson@stevens.edu / Password: Password123!");
+		console.log("Admin Credentials:");
+		console.log("Username: Admin_admin / Password: 12345Abcde@");
 
 		await closeConnection();
 		process.exit(0);
@@ -176,5 +185,5 @@ const seedData = async () => {
 	}
 };
 
-// Run the seed function
+// Run seeding
 seedData();

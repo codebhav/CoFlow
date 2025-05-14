@@ -302,9 +302,9 @@ router
 					user = await userdata.findUserByUsername(userName);
 
 					// If not found, try by email
-					if (!user) {
-						user = await userdata.findUserByEmail(userName);
-					}
+					// if (!user) {
+					// 	user = await userdata.findUserByEmail(userName);
+					// }
 
 					// If still not found, try in admin collection
 					if (!user) {
