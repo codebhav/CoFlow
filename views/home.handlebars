@@ -1,22 +1,127 @@
-<h1>Welcome to CoFlow!</h1>
-<p>CoFlow aims to create a vibrant learning community where students can collaborate effectively. Users can:</p>
-<p>- Browse groups by category or create their own with customized parameters.</p>
-<p>- Connect via personalized profiles, direct messaging, and integrated calendars.</p>
-<p>- Engage in a rewarding experience with ratings, badges, and achievements.</p>
-
-<p>By leveraging PWA capabilities, CoFlow ensures accessibility and a native-like experience on mobile devices, making it easy for students to study together anytime, anywhere.</p>
-
 {{#if user}}
-    <p>You are logged in as {{user.userName}}.</p>
-    {{#if (eq user.role "user")}}
-    <p><a href="/profile">View your profile</a>.</p>
-    {{/if}}
-    {{#if (eq user.role "admin")}}
-    <p><a href="/admin/admin-table">Go to Admin Table</a>.</p>
-    {{/if}}
-    {{#if (eq user.role "business")}}
-    <p><a href="/profile/business">Go to Business Profile</a>.</p>
-    {{/if}}
+	<div class="dashboard-container">
+		<div class="welcome-section">
+			<h1>Welcome back, {{user.userName}}! 👋</h1>
+			<p class="subtitle">Ready to collaborate and learn together?</p>
+		</div>
+
+		<div class="quick-actions">
+			<a href="/groups/create" class="action-card create">
+				<i class="fas fa-plus-circle"></i>
+				<h3>Create Group</h3>
+				<p>Start a new study or project group</p>
+			</a>
+			<a href="/groups" class="action-card browse">
+				<i class="fas fa-search"></i>
+				<h3>Browse Groups</h3>
+				<p>Find groups to join</p>
+			</a>
+			<a href="/groups/myGroups" class="action-card my-groups">
+				<i class="fas fa-users"></i>
+				<h3>My Groups</h3>
+				<p>Manage your groups</p>
+			</a>
+			<a href="/schedule/calendar" class="action-card calendar">
+				<i class="fas fa-calendar-alt"></i>
+				<h3>Calendar</h3>
+				<p>View your schedule</p>
+			</a>
+		</div>
+
+		<div class="features-grid">
+			<div class="feature-card">
+				<h3>📚 Study Groups</h3>
+				<p>Join or create study groups for your courses. Share knowledge
+					and prepare together.</p>
+			</div>
+			<div class="feature-card">
+				<h3>🎯 Project Groups</h3>
+				<p>Collaborate on projects with classmates. Track progress and
+					meet deadlines.</p>
+			</div>
+			<div class="feature-card">
+				<h3>📅 Smart Scheduling</h3>
+				<p>Manage your study sessions with an integrated calendar. Never
+					miss a meeting.</p>
+			</div>
+			<div class="feature-card">
+				<h3>🤝 Easy Collaboration</h3>
+				<p>Connect with peers, share resources, and learn together
+					effectively.</p>
+			</div>
+		</div>
+	</div>
 {{else}}
-    <p>Please <a href="/auth/signup">sign up</a> or <a href="/auth/login">log in</a> to access more features.</p>
+	<div class="landing-container">
+		<div class="hero-section">
+			<h1>Welcome to CoFlow!</h1>
+			<p class="tagline">Your platform for collaborative learning and
+				group study at Stevens</p>
+			<div class="cta-buttons">
+				<a href="/auth/signup" class="btn btn-primary">Sign Up</a>
+				<a href="/auth/login" class="btn btn-secondary">Log In</a>
+			</div>
+		</div>
+
+		<div class="features-section">
+			<h2>Why Choose CoFlow?</h2>
+			<div class="features-grid">
+				<div class="feature-card">
+					<h3>📚 Study Together</h3>
+					<p>Join study groups for your courses or create your own.
+						Share knowledge and excel together.</p>
+				</div>
+				<div class="feature-card">
+					<h3>🎯 Project Collaboration</h3>
+					<p>Find project partners, manage team meetings, and track
+						progress effectively.</p>
+				</div>
+				<div class="feature-card">
+					<h3>📅 Smart Calendar</h3>
+					<p>Integrated calendar to manage all your study sessions and
+						group meetings.</p>
+				</div>
+				<div class="feature-card">
+					<h3>🌟 Achievement System</h3>
+					<p>Earn badges and track your progress as you collaborate
+						and help others.</p>
+				</div>
+			</div>
+		</div>
+	</div>
 {{/if}}
+
+<style>
+	.dashboard-container, .landing-container { max-width: 1200px; margin: 0
+	auto; padding: 2rem; } .welcome-section { text-align: center; margin-bottom:
+	3rem; } .welcome-section h1 { font-size: 2.5rem; color: #2c3e50;
+	margin-bottom: 0.5rem; } .subtitle { font-size: 1.2rem; color: #7f8c8d; }
+	.quick-actions { display: grid; grid-template-columns: repeat(auto-fit,
+	minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; } .action-card {
+	background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px
+	10px rgba(0,0,0,0.1); text-decoration: none; color: inherit; transition:
+	transform 0.2s, box-shadow 0.2s; text-align: center; } .action-card:hover {
+	transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+	.action-card i { font-size: 2rem; margin-bottom: 1rem; } .action-card.create
+	i { color: #2ecc71; } .action-card.browse i { color: #3498db; }
+	.action-card.my-groups i { color: #e74c3c; } .action-card.calendar i {
+	color: #f39c12; } .action-card h3 { margin: 0.5rem 0; color: #2c3e50; }
+	.action-card p { color: #7f8c8d; margin: 0; } .features-grid { display:
+	grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:
+	1.5rem; margin-top: 2rem; } .feature-card { background: white; padding:
+	1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+	.feature-card h3 { margin: 0 0 1rem 0; color: #2c3e50; } .feature-card p {
+	color: #7f8c8d; margin: 0; } .hero-section { text-align: center; padding:
+	4rem 0; } .hero-section h1 { font-size: 3rem; color: #2c3e50; margin-bottom:
+	1rem; } .tagline { font-size: 1.5rem; color: #7f8c8d; margin-bottom: 2rem; }
+	.cta-buttons { display: flex; gap: 1rem; justify-content: center; } .btn {
+	padding: 1rem 2rem; border-radius: 5px; text-decoration: none; font-weight:
+	bold; transition: background-color 0.2s; } .btn-primary { background-color:
+	#3498db; color: white; } .btn-primary:hover { background-color: #2980b9; }
+	.btn-secondary { background-color: #ecf0f1; color: #2c3e50; }
+	.btn-secondary:hover { background-color: #bdc3c7; } .features-section {
+	padding: 4rem 0; } .features-section h2 { text-align: center; color:
+	#2c3e50; margin-bottom: 2rem; } @media (max-width: 768px) { .quick-actions {
+	grid-template-columns: 1fr; } .features-grid { grid-template-columns: 1fr; }
+	.hero-section h1 { font-size: 2rem; } .tagline { font-size: 1.2rem; } }
+</style>

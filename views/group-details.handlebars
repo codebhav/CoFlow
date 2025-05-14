@@ -68,8 +68,17 @@
 			</div>
 		</div>
 
+		{{#if (eq group.userRole "user")}}
+		<div class="pending-requests" data-user-role="admin">
+			<h2>Pending Requests</h2>
+			<div id="pending-requests-list">
+				Loading pending requests...
+			</div>
+		</div>
+		{{/if}}
+
 		<div class="group-actions">
-			{{#if (eq group.userRole "admin")}}
+			{{#if (eq group.userRole "user")}}
 				
 					href="/groups/{{group._id}}/edit"
 					class="btn btn-primary"
@@ -119,7 +128,7 @@
 </div>
 
 <script>
-	document.addEventListener('DOMContentLoaded', function() { 
+	document.addEventListener('DOMContentLoaded', function() {
 		// Handle delete group
 		const deleteBtn = document.getElementById('delete-group-btn'); 
 		if (deleteBtn) { 
@@ -223,13 +232,88 @@
 				} 
 			}); 
 		}
+
+		// Load pending requests for admin
+		const loadPendingRequests = async () => {
+			const container = document.getElementById('pending-requests-list');
+			try {
+				const response = await fetch('/groups/pendingUsers', {
+					method: 'POST',
+					headers: { 
+						'Content-Type': 'application/json',
+						'X-Requested-With': 'XMLHttpRequest'
+					},
+					body: JSON.stringify({ groupId: '{{group._id}}' })
+				});
+				
+				if (!response.ok) {
+					const error = await response.json();
+					throw new Error(error.message || 'Failed to load pending requests');
+				}
+				
+				const pendingUsers = await response.json();
+				
+				if (pendingUsers.length === 0) {
+					container.innerHTML = '<p class="no-requests">No pending requests</p>';
+					return;
+				}
+				
+				container.innerHTML = pendingUsers.map(([userId, userName]) => `
+					<div class="pending-request-item">
+						<span class="user-name">${userName}</span>
+						<div class="request-actions">
+							<button onclick="handleRequest('${userId}', true)" class="btn btn-success">Accept</button>
+							<button onclick="handleRequest('${userId}', false)" class="btn btn-danger">Reject</button>
+						</div>
+					</div>
+				`).join('');
+			} catch (error) {
+				console.error('Error loading pending requests:', error);
+				container.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+			}
+		};
+
+		// Handle accept/reject requests
+		window.handleRequest = async (userId, accept) => {
+			try {
+				const endpoint = accept ? '/groups/acceptUser' : '/groups/rejectUser';
+				const response = await fetch(endpoint, {
+					method: 'POST',
+					headers: { 
+						'Content-Type': 'application/json',
+						'X-Requested-With': 'XMLHttpRequest'
+					},
+					body: JSON.stringify({
+						userId: userId,
+						groupId: '{{group._id}}'
+					})
+				});
+
+				if (!response.ok) {
+					const error = await response.json();
+					throw new Error(error.message || `Failed to ${accept ? 'accept' : 'reject'} user`);
+				}
+
+				// Reload pending requests
+				await loadPendingRequests();
+			} catch (error) {
+				console.error('Error handling request:', error);
+				alert(`Failed to ${accept ? 'accept' : 'reject'} user: ${error.message}`);
+			}
+		};
+
+		// If user is admin, load pending requests
+		if (document.querySelector('[data-user-role="admin"]')) {
+			loadPendingRequests();
+		}
 	});
 </script>
 
 <style>
 	.group-details-container { 
-		max-width: 900px; 
-		margin: 2rem auto;
+		max-width: 1200px; 
+		margin: 0 auto; 
+		padding: 2rem; 
 		background-color: #fff; 
 		border-radius: 8px; 
 		box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
@@ -374,5 +458,74 @@
 	}
 	.btn-info:hover { 
 		background-color: #138496; 
+	}
+
+	/* Pending Requests Styles */
+	.pending-requests {
+		margin-top: 2rem;
+		background: white;
+		border-radius: 8px;
+		padding: 1.5rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.pending-requests h2 {
+		margin-bottom: 1rem;
+		color: #2c3e50;
+		border-bottom: 2px solid #eee;
+		padding-bottom: 0.5rem;
+	}
+
+	.pending-request-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem;
+		border-bottom: 1px solid #eee;
+		background-color: #f8f9fa;
+		border-radius: 4px;
+		margin-bottom: 0.5rem;
+	}
+
+	.pending-request-item:last-child {
+		border-bottom: none;
+		margin-bottom: 0;
+	}
+
+	.user-name {
+		font-weight: 500;
+		color: #2c3e50;
+	}
+
+	.request-actions {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.btn-success {
+		background-color: #2ecc71;
+		color: white;
+		border: none;
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+
+	.btn-success:hover {
+		background-color: #27ae60;
+	}
+
+	.no-requests {
+		color: #666;
+		font-style: italic;
+		text-align: center;
+		padding: 1rem;
+	}
+
+	.error {
+		color: #e74c3c;
+		font-style: italic;
+		padding: 1rem;
 	}
 </style>

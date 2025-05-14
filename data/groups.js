@@ -171,7 +171,7 @@ export const createGroup = async (
 			members: [creatorId],
 			pendingMembers: [],
 			rejectedMembers: [],
-			tags,
+			tags: tags || [],
 			createdAt: currentDate,
 			updatedAt: currentDate,
 		};
@@ -1094,8 +1094,15 @@ export const requestToJoin = async (userId, groupId) => {
 			throw new ValidationError("You are already a member of this group");
 		}
 
+		// Check if user was previously rejected
+		if (group.rejectedMembers && group.rejectedMembers.includes(userId)) {
+			throw new ValidationError(
+				"Your request to join this group was previously rejected"
+			);
+		}
+
 		// Check if user already has a pending request
-		if (group.pendingMembers.includes(userId)) {
+		if (group.pendingMembers && group.pendingMembers.includes(userId)) {
 			throw new ValidationError(
 				"You already have a pending request to join this group"
 			);
@@ -1113,7 +1120,29 @@ export const requestToJoin = async (userId, groupId) => {
 		}
 
 		// Check conflicts in user's schedule
-		const userGroups = user.createdGroups.concat(user.joinedGroups || []);
+		const userGroups = (user.createdGroups || []).concat(
+			user.joinedGroups || []
+		);
+
+		// Initialize arrays if they don't exist
+		if (!user.createdGroups) {
+			await usersCollection.updateOne(
+				{ _id: new ObjectId(userId) },
+				{ $set: { createdGroups: [] } }
+			);
+		}
+		if (!user.joinedGroups) {
+			await usersCollection.updateOne(
+				{ _id: new ObjectId(userId) },
+				{ $set: { joinedGroups: [] } }
+			);
+		}
+		if (!user.pendingGroups) {
+			await usersCollection.updateOne(
+				{ _id: new ObjectId(userId) },
+				{ $set: { pendingGroups: [] } }
+			);
+		}
 
 		if (userGroups.length > 0) {
 			const existingGroups = await groupsCollection

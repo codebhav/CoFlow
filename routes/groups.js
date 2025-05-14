@@ -507,31 +507,18 @@ router.route("/reqJoin").post(
 			// Request to join group
 			await groupData.requestToJoin(userId, formId);
 
-			// If AJAX request
-			if (req.xhr) {
-				return res.json({
-					success: true,
-					message: "Join request sent successfully",
-				});
-			}
-
-			// If regular form submission
-			return res.redirect("/groups");
+			// Always return JSON since this is an AJAX endpoint
+			return res.json({
+				success: true,
+				message: "Join request sent successfully",
+			});
 		} catch (error) {
 			console.error("Error requesting to join group:", error);
 
-			// If AJAX request
-			if (req.xhr) {
-				return res.status(400).json({
-					success: false,
-					message: error.message || "Failed to request joining group",
-				});
-			}
-
-			// If regular form submission
-			return res.status(400).render("groups", {
-				title: "Browse Groups",
-				error: error.message || "Failed to request joining group",
+			// Always return JSON error response
+			return res.status(400).json({
+				success: false,
+				message: error.message || "Failed to request joining group",
 			});
 		}
 	})
@@ -544,7 +531,7 @@ router.route("/pendingUsers").post(
 	ensureAuthenticated,
 	asyncHandler(async (req, res) => {
 		try {
-			const userId = req.session.user._id;
+			const userId = req.session.user.id;
 			const { groupId } = req.body;
 
 			if (!groupId) {
