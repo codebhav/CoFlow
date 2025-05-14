@@ -15,13 +15,19 @@ const loggingMiddleware = (req, res, next) => {
 	let authStatus = "Non-Authenticated";
 
 	if (isAuthenticated) {
-		authStatus =
-			req.session.user.role === "admin"
-				? "Authenticated Admin"
-				: `Authenticated ${
-						req.session.user.role.charAt(0).toUpperCase() +
-						req.session.user.role.slice(1)
-				  }`;
+		// Check if role exists before accessing its properties
+		if (req.session.user.role) {
+			authStatus =
+				req.session.user.role === "admin"
+					? "Authenticated Admin"
+					: `Authenticated ${
+							req.session.user.role.charAt(0).toUpperCase() +
+							req.session.user.role.slice(1)
+					  }`;
+		} else {
+			// Handle case where role is undefined
+			authStatus = "Authenticated (No Role)";
+		}
 	}
 
 	console.log(`[${timestamp}]: ${method} ${path} (${authStatus})`);

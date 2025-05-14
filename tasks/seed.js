@@ -160,6 +160,7 @@ const seedData = async () => {
 		const adminData = {
 			userName: "Admin_admin",
 			hashedPassword: await bcrypt.hash("12345Abcde@", saltRounds),
+			role: "admin", // Add the missing role field
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		};
